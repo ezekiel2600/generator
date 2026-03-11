@@ -197,8 +197,9 @@
       min-height:0;
     }
     .mt-choice:hover{
-      border-color:rgba(193,41,46,.4);
-      box-shadow:0 12px 24px rgba(193,41,46,.08);
+      border-color:rgba(255,202,58,.85);
+      box-shadow:0 0 0 1px rgba(255,202,58,.22) inset, 0 12px 24px rgba(255,202,58,.12);
+      background:linear-gradient(180deg, rgba(255,202,58,.14), rgba(193,41,46,.12));
       transform:translateY(-1px);
     }
     .mt-choice.is-selected{
@@ -942,6 +943,11 @@
       #mtGeneratorRoot .mt-estimator .mt-placeholder {
         background: rgba(255,255,255,.06);
         border-color: rgba(255,255,255,.18);
+      }
+      #mtGeneratorRoot .mt-estimator .mt-choice:hover {
+        border-color: rgba(255,202,58,.85);
+        box-shadow: 0 0 0 1px rgba(255,202,58,.22) inset, 0 12px 24px rgba(255,202,58,.12);
+        background: linear-gradient(180deg, rgba(255,202,58,.14), rgba(193,41,46,.12));
       }
       #mtGeneratorRoot .mt-estimator .mt-choice.is-selected {
         border-color: var(--mt-red);
