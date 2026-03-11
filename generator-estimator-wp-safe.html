@@ -208,18 +208,16 @@
       width:54px;
       height:54px;
       border-radius:16px;
-      background:var(--mt-red);
+      background:linear-gradient(180deg,#111,#232323);
       color:#fff;
       display:grid;
       place-items:center;
       flex:0 0 auto;
-      border:1px solid var(--mt-red);
-      box-shadow:none;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
     }
     .mt-choice.is-selected .mt-choiceIcon{
-      background:#fff;
-      color:var(--mt-red);
-      border-color:#fff;
+      background:linear-gradient(180deg,var(--mt-red), #8f1d21);
     }
     .mt-choiceIcon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .mt-choiceBody strong{
@@ -867,17 +865,16 @@
         background: linear-gradient(180deg, rgba(255,202,58,.14), rgba(193,41,46,.12));
       }
 
-      /* Left-side icon treatment: brand red by default, white when selected */
+      /* Left-side icon treatment: white background and dark icon by default */
       #mtGeneratorRoot .mt-estimator .mt-choiceIcon {
-        background: var(--mt-red);
-        color: #ffffff;
-        border: 1px solid var(--mt-red);
-        box-shadow: none;
+        background: #ffffff;
+        color: #181818;
+        border: 1px solid rgba(0,0,0,.08);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
       }
       #mtGeneratorRoot .mt-estimator .mt-choice.is-selected .mt-choiceIcon {
         background: #ffffff;
-        color: var(--mt-red);
-        border-color: #ffffff;
+        color: #181818;
       }
 
       #mtGeneratorRoot .mt-guide {
