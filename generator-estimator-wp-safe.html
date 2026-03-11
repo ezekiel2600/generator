@@ -777,13 +777,19 @@
 
     /* Estimator custom header */
     .mt-est-head {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto;
       align-items: center;
-      justify-content: center;
       gap: 10px;
       padding: 12px 20px;
       border-bottom: 1px solid rgba(0,0,0,.08);
       background: #fff;
+    }
+    .mt-est-headBrand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
     .mt-est-head img {
       width: 48px;
@@ -832,6 +838,27 @@
       #mtGeneratorRoot .mt-est-head {
         background: rgba(0,0,0,.28);
         border-bottom: 1px solid rgba(255,255,255,.12);
+      }
+      #mtGeneratorRoot .mt-est-head .mt-resetBtn {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,.15);
+        background: rgba(0,0,0,.32);
+        cursor: pointer;
+        transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      }
+      #mtGeneratorRoot .mt-est-head .mt-resetBtn:hover {
+        transform: translateY(-1px);
+        background: rgba(0,0,0,.42);
+        border-color: rgba(255,255,255,.3);
+      }
+      #mtGeneratorRoot .mt-est-head .mt-resetBtn img {
+        width: 26px;
+        height: 26px;
+        display: block;
       }
       #mtGeneratorRoot .mt-est-head span,
       #mtGeneratorRoot .mt-estimator .mt-topbar h2,
@@ -986,8 +1013,13 @@
       <section class="mt-card mt-estimator" aria-label="Generator estimator">
         <!-- Added custom estimator header with icon and title -->
         <div class="mt-est-head">
-          <img src="https://www.mt-electric.net/wp-content/uploads/2024/07/Untitled-1.png" alt="Backup Generator Estimator icon">
-          <span>Generator Estimator</span>
+          <div class="mt-est-headBrand">
+            <img src="https://www.mt-electric.net/wp-content/uploads/2024/07/Untitled-1.png" alt="Backup Generator Estimator icon">
+            <span>Generator Estimator</span>
+          </div>
+          <button class="mt-resetBtn" type="button" id="estimatorResetBtn" aria-label="Reset estimator" title="Reset estimator">
+            <img src="https://www.mt-electric.net/wp-content/uploads/2026/03/reload-reset.svg" alt="">
+          </button>
         </div>
         <div class="mt-topbar">
           <h2 id="mtEstimatorStepName">Backup Goal</h2>
@@ -1980,6 +2012,7 @@
 
       prevBtns.forEach(btn => btn.addEventListener('click', () => showEstimatorStep(currentStep - 1)));
       root.querySelector('#restartBtn').addEventListener('click', () => window.location.reload());
+      root.querySelector('#estimatorResetBtn').addEventListener('click', () => window.location.reload());
 
       guidePrev.addEventListener('click', () => goToGuide(currentGuideIndex - 1));
       guideNext.addEventListener('click', () => goToGuide(currentGuideIndex + 1));
