@@ -134,6 +134,35 @@
       color:#555;
       font-weight:700;
     }
+    .mt-est-tools{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-left:auto;
+    }
+    .mt-resetIconBtn{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.12);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      padding:0;
+      cursor:pointer;
+      transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+      flex:0 0 auto;
+    }
+    .mt-resetIconBtn:hover{
+      transform:translateY(-1px);
+      border-color:rgba(193,41,46,.42);
+      box-shadow:0 8px 18px rgba(193,41,46,.14);
+    }
+    .mt-resetIconBtn img{
+      width:20px;
+      height:20px;
+      display:block;
+    }
     .mt-progress{
       height:10px;
       background:#eee;
@@ -991,8 +1020,13 @@
         </div>
         <div class="mt-topbar">
           <h2 id="mtEstimatorStepName">Backup Goal</h2>
-          <div class="mt-stepmeta">
-            <div id="mtEstimatorStepLabel">Step 1 of 6</div>
+          <div class="mt-est-tools">
+            <div class="mt-stepmeta">
+              <div id="mtEstimatorStepLabel">Step 1 of 6</div>
+            </div>
+            <button class="mt-resetIconBtn" id="mtResetIconBtn" type="button" aria-label="Reset estimator">
+              <img src="https://www.mt-electric.net/wp-content/uploads/2026/03/reload-reset.svg" alt="">
+            </button>
           </div>
           <div class="mt-progress" aria-hidden="true"><span id="mtEstimatorProgress"></span></div>
         </div>
@@ -1980,6 +2014,7 @@
 
       prevBtns.forEach(btn => btn.addEventListener('click', () => showEstimatorStep(currentStep - 1)));
       root.querySelector('#restartBtn').addEventListener('click', () => window.location.reload());
+      root.querySelector('#mtResetIconBtn').addEventListener('click', () => window.location.reload());
 
       guidePrev.addEventListener('click', () => goToGuide(currentGuideIndex - 1));
       guideNext.addEventListener('click', () => goToGuide(currentGuideIndex + 1));
