@@ -1,0 +1,1848 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MT Electric Generator Estimator</title>
+  <style>
+    :root{
+      --mt-red:#C1292E;
+      --mt-yellow:#FFCA3A;
+      --mt-black:#101010;
+      --mt-white:#ffffff;
+      --mt-muted:#666;
+      --mt-soft:#f5f5f5;
+      --mt-border:rgba(0,0,0,.1);
+      --mt-shadow:0 18px 48px rgba(0,0,0,.12);
+      --mt-radius:22px;
+      --mt-radius-sm:16px;
+      --mt-good:#15803d;
+    }
+
+    /* Scope all styling to our root to avoid conflicts with surrounding WordPress styles. */
+    #mtGeneratorRoot *{ box-sizing: border-box; }
+    #mtGeneratorRoot{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--mt-black);
+      background: linear-gradient(180deg,#fff 0%,#f7f7f7 100%);
+    }
+    #mtGeneratorRoot h1,
+    #mtGeneratorRoot h2,
+    #mtGeneratorRoot h3,
+    #mtGeneratorRoot p{ margin:0; }
+    #mtGeneratorRoot button{ font: inherit; }
+
+    /* Additional WordPress resets and focus states */
+    #mtGeneratorRoot a{
+      color: var(--mt-red);
+      text-decoration: underline;
+    }
+    #mtGeneratorRoot a:hover{
+      text-decoration: none;
+    }
+    #mtGeneratorRoot input,
+    #mtGeneratorRoot select,
+    #mtGeneratorRoot textarea{
+      font-family: inherit;
+      font-size: inherit;
+    }
+    #mtGeneratorRoot button:focus-visible,
+    #mtGeneratorRoot input:focus-visible,
+    #mtGeneratorRoot select:focus-visible,
+    #mtGeneratorRoot textarea:focus-visible{
+      outline: 2px solid var(--mt-red);
+      outline-offset: 2px;
+    }
+
+    .mt-wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:28px 18px 40px;
+    }
+    .mt-head{
+      margin-bottom:22px;
+    }
+    .mt-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(193,41,46,.08);
+      color:var(--mt-red);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.02em;
+      margin-bottom:14px;
+    }
+    .mt-head h1{
+      font-size:clamp(30px,4vw,48px);
+      line-height:1.02;
+      letter-spacing:-.03em;
+      margin-bottom:12px;
+    }
+    .mt-head p{
+      max-width:900px;
+      font-size:17px;
+      line-height:1.55;
+      color:#333;
+    }
+
+    .mt-shell{
+      display:grid;
+      /* Equal 50/50 split between estimator and guide. Maintain reasonable minimum widths for each side. */
+      grid-template-columns:minmax(360px, 1fr) minmax(420px, 1fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .mt-card{
+      background:#fff;
+      border:1px solid var(--mt-border);
+      border-radius:var(--mt-radius);
+      box-shadow:var(--mt-shadow);
+      overflow:hidden;
+    }
+
+    .mt-estimator,
+    .mt-guide{
+      min-height:760px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .mt-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 20px 14px;
+      border-bottom:1px solid rgba(0,0,0,.08);
+      position:sticky;
+      top:0;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(8px);
+      z-index:10;
+    }
+    .mt-topbar h2{
+      font-size:24px;
+      letter-spacing:-.02em;
+    }
+    .mt-stepmeta{
+      text-align:right;
+      font-size:13px;
+      color:#555;
+      font-weight:700;
+    }
+    .mt-progress{
+      height:10px;
+      background:#eee;
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:8px;
+      width:220px;
+      max-width:38vw;
+      border:1px solid rgba(0,0,0,.05);
+    }
+    .mt-progress > span{
+      display:block;
+      height:100%;
+      width:0;
+      background:linear-gradient(90deg,var(--mt-yellow), var(--mt-red));
+      transition:width .24s ease;
+    }
+
+    .mt-est-main{
+      padding:18px 20px 20px;
+      display:flex;
+      flex-direction:column;
+      flex:1 1 auto;
+    }
+    .mt-slide{display:none; flex:1 1 auto; flex-direction:column; min-height:0;}
+    .mt-slide.is-active{display:flex;}
+    .mt-slide h3{
+      font-size:30px;
+      line-height:1.05;
+      letter-spacing:-.03em;
+      margin-bottom:10px;
+    }
+    .mt-slide .mt-sub{
+      color:#444;
+      line-height:1.55;
+      font-size:15px;
+      margin-bottom:18px;
+    }
+
+    .mt-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+    .mt-grid.mt-grid-2{grid-template-columns:1fr 1fr;}
+
+    .mt-choice{
+      position:relative;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:18px;
+      background:#fff;
+      padding:16px 16px 16px 14px;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      text-align:left;
+      cursor:pointer;
+      transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease, background .18s ease;
+      min-height:102px;
+    }
+    .mt-choice:hover{
+      border-color:rgba(193,41,46,.4);
+      box-shadow:0 12px 24px rgba(193,41,46,.08);
+      transform:translateY(-1px);
+    }
+    .mt-choice.is-selected{
+      border-color:var(--mt-red);
+      box-shadow:0 14px 28px rgba(193,41,46,.16);
+      background:linear-gradient(180deg,rgba(193,41,46,.05), rgba(255,202,58,.09));
+    }
+    .mt-choiceIcon{
+      width:54px;
+      height:54px;
+      border-radius:16px;
+      background:linear-gradient(180deg,#111,#232323);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .mt-choice.is-selected .mt-choiceIcon{
+      background:linear-gradient(180deg,var(--mt-red), #8f1d21);
+    }
+    .mt-choiceIcon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .mt-choiceBody strong{
+      display:block;
+      font-size:16px;
+      line-height:1.25;
+      margin-bottom:5px;
+    }
+    .mt-choiceBody span{
+      display:block;
+      color:#555;
+      line-height:1.42;
+      font-size:13px;
+    }
+
+    .mt-binary{
+      display:flex;
+      gap:12px;
+      margin-top:16px;
+    }
+    .mt-pill{
+      border:1px solid rgba(0,0,0,.12);
+      background:#fff;
+      color:#111;
+      border-radius:999px;
+      padding:12px 18px;
+      font-weight:800;
+      cursor:pointer;
+      min-width:110px;
+      transition:.18s ease;
+    }
+    .mt-pill.is-selected{
+      background:var(--mt-red);
+      border-color:var(--mt-red);
+      color:#fff;
+    }
+
+    .mt-multiHeader{
+      font-size:12px;
+      color:#666;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin:4px 0 12px;
+    }
+
+    .mt-chipRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .mt-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(193,41,46,.08);
+      color:var(--mt-red);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .mt-actions{
+      margin-top:auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding-top:18px;
+    }
+    .mt-btn,
+    .mt-btnGhost{
+      border:0;
+      border-radius:16px;
+      padding:15px 18px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .16s ease, opacity .16s ease, background .16s ease;
+    }
+    .mt-btn:hover,
+    .mt-btnGhost:hover{transform:translateY(-1px)}
+    .mt-btn:disabled,
+    .mt-btnGhost:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .mt-btn{
+      background:var(--mt-yellow);
+      color:#111;
+      flex:1 1 auto;
+      font-size:18px;
+    }
+    .mt-btnPrimary{
+      background:var(--mt-red);
+      color:#fff;
+    }
+    .mt-btnGhost{
+      background:#f2f2f2;
+      color:#222;
+      flex:0 0 auto;
+    }
+
+    .mt-resultHero{
+      border:1px solid rgba(193,41,46,.14);
+      background:linear-gradient(135deg, rgba(193,41,46,.06), rgba(255,202,58,.15));
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:16px;
+    }
+    .mt-resultLabel{
+      font-size:12px;
+      color:#666;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
+    }
+    .mt-resultKw{
+      font-size:36px;
+      line-height:1;
+      letter-spacing:-.04em;
+      margin-bottom:8px;
+      font-weight:950;
+    }
+    .mt-resultPrice{
+      font-size:26px;
+      line-height:1.1;
+      font-weight:900;
+      color:var(--mt-red);
+    }
+    .mt-summary{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:16px;
+    }
+    .mt-summaryItem{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:16px;
+      padding:12px;
+      background:#fafafa;
+    }
+    .mt-summaryItem b{
+      display:block;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#666;
+      margin-bottom:6px;
+    }
+    .mt-summaryItem span{
+      display:block;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.35;
+    }
+    .mt-includes{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:grid;
+      gap:8px;
+    }
+    .mt-includes li{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      padding:11px 12px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:14px;
+      font-weight:700;
+    }
+    .mt-placeholder{
+      margin-top:16px;
+      border:2px dashed rgba(193,41,46,.25);
+      border-radius:18px;
+      padding:18px;
+      background:rgba(193,41,46,.03);
+      text-align:center;
+    }
+    .mt-placeholder strong{
+      display:block;
+      font-size:18px;
+      margin-bottom:6px;
+    }
+    .mt-placeholder p{
+      color:#555;
+      line-height:1.5;
+      font-size:14px;
+    }
+
+    .mt-guide .mt-topbar{
+      background:linear-gradient(180deg,#151515,#111);
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
+    .mt-guide .mt-topbar h2{color:#fff}
+    .mt-guide .mt-stepmeta{color:rgba(255,255,255,.78)}
+    .mt-guide .mt-progress{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.08)}
+
+    .mt-guideStage{
+      position:relative;
+      flex:1 1 auto;
+      padding:22px;
+      background:linear-gradient(135deg,#111,#1d1d1d 55%, #2a2a2a);
+      color:#fff;
+      overflow:hidden;
+    }
+    .mt-guideStage::before{
+      content:"";
+      position:absolute;
+      inset:auto -10% -22% auto;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,202,58,.18), transparent 68%);
+      pointer-events:none;
+    }
+    .mt-guideStage::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(193,41,46,.16), transparent 30%, transparent 70%, rgba(255,202,58,.08));
+      pointer-events:none;
+    }
+    .mt-guideViewport{
+      position:relative;
+      min-height:640px;
+      z-index:1;
+    }
+    .mt-gslide{display:none; animation:fadeIn .24s ease;}
+    .mt-gslide.is-active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .mt-guideTag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:16px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.09em;
+      font-weight:800;
+    }
+    .mt-guideTitle{
+      font-size:clamp(30px, 4vw, 44px);
+      line-height:1.02;
+      letter-spacing:-.04em;
+      margin-bottom:12px;
+      max-width:700px;
+    }
+    .mt-guideText{
+      max-width:700px;
+      color:rgba(255,255,255,.88);
+      line-height:1.62;
+      font-size:16px;
+      margin-bottom:18px;
+    }
+    .mt-guideSplit{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:20px;
+      align-items:start;
+    }
+    .mt-guidePanel,
+    .mt-guideVisual{
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      backdrop-filter:blur(8px);
+      padding:18px;
+    }
+    .mt-guidePanel h4,
+    .mt-guideVisual h4{
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:rgba(255,255,255,.74);
+      margin-bottom:12px;
+    }
+    .mt-tierList,
+    .mt-factList,
+    .mt-summaryTokens,
+    .mt-installList{
+      list-style:none;
+      margin:0;
+      padding:0;
+      display:grid;
+      gap:10px;
+    }
+    .mt-tierList li,
+    .mt-factList li,
+    .mt-summaryTokens li,
+    .mt-installList li{
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(0,0,0,.2);
+      border-radius:16px;
+      padding:13px 14px;
+    }
+    .mt-tierList li strong,
+    .mt-factList li strong,
+    .mt-summaryTokens li strong,
+    .mt-installList li strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+    .mt-tierList li span,
+    .mt-factList li span,
+    .mt-summaryTokens li span,
+    .mt-installList li span{
+      display:block;
+      color:rgba(255,255,255,.78);
+      line-height:1.45;
+      font-size:13px;
+    }
+    .mt-tierList li.is-highlight,
+    .mt-factList li.is-highlight,
+    .mt-summaryTokens li.is-highlight,
+    .mt-installList li.is-highlight{
+      border-color:rgba(255,202,58,.85);
+      box-shadow:0 0 0 1px rgba(255,202,58,.22) inset;
+      background:linear-gradient(180deg, rgba(255,202,58,.14), rgba(193,41,46,.12));
+    }
+    .mt-sizeBands{
+      display:grid;
+      gap:10px;
+    }
+    .mt-band{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:13px 14px;
+      border-radius:16px;
+      background:rgba(0,0,0,.2);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+    }
+    .mt-band.is-highlight{
+      border-color:rgba(255,202,58,.85);
+      background:linear-gradient(90deg, rgba(255,202,58,.16), rgba(193,41,46,.12));
+    }
+    .mt-band strong{font-size:18px}
+    .mt-band span{font-size:13px;color:rgba(255,255,255,.76)}
+
+    .mt-homeScale{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      align-items:end;
+      min-height:170px;
+    }
+    .mt-house{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      text-align:center;
+    }
+    .mt-houseShape{
+      width:100%;
+      max-width:92px;
+      border-radius:16px 16px 10px 10px;
+      background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.14);
+      position:relative;
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);
+    }
+    .mt-houseShape::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:-18px;
+      width:60%;
+      height:24px;
+      transform:translateX(-50%);
+      background:rgba(255,255,255,.16);
+      clip-path:polygon(50% 0, 100% 100%, 0 100%);
+      border-top-left-radius:8px;
+      border-top-right-radius:8px;
+    }
+    .mt-house.is-highlight .mt-houseShape{
+      background:linear-gradient(180deg, rgba(255,202,58,.24), rgba(193,41,46,.2));
+      border-color:rgba(255,202,58,.85);
+    }
+
+    .mt-impactCard{
+      min-height:260px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      border-radius:20px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+    }
+    .mt-impactMeter{
+      height:14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+      overflow:hidden;
+      margin-top:14px;
+    }
+    .mt-impactMeter > span{
+      display:block;
+      height:100%;
+      width:44%;
+      background:linear-gradient(90deg,var(--mt-yellow), var(--mt-red));
+      transition:width .22s ease;
+    }
+
+    .mt-guideNav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-top:18px;
+      position:relative;
+      z-index:1;
+    }
+    .mt-navBtn{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      cursor:pointer;
+      transition:.18s ease;
+      font-size:18px;
+      font-weight:900;
+    }
+    .mt-navBtn:hover{background:rgba(255,202,58,.18);border-color:rgba(255,202,58,.4)}
+    .mt-navBtn:disabled{opacity:.32;cursor:not-allowed}
+    .mt-guideDots{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;
+      flex:1 1 auto;
+      padding:0 10px;
+    }
+    .mt-guideDot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:rgba(255,255,255,.24);
+      transition:transform .18s ease, background .18s ease;
+    }
+    .mt-guideDot.is-active{background:var(--mt-yellow); transform:scale(1.18)}
+    .mt-gcount{font-size:12px;color:rgba(255,255,255,.75);font-weight:800;min-width:58px;text-align:right}
+
+    .mt-legend{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+
+    .mt-systemDiag{
+      display:grid;
+      gap:10px;
+    }
+    .mt-systemNode{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+    }
+    .mt-systemNode strong{font-size:14px}
+    .mt-systemNode span{font-size:13px;color:rgba(255,255,255,.76)}
+
+    @media (max-width: 1080px){
+      .mt-shell{grid-template-columns:1fr;}
+      .mt-estimator,.mt-guide{min-height:unset}
+      .mt-guideViewport{min-height:560px}
+    }
+    @media (max-width: 760px){
+      .mt-wrap{padding:18px 12px 28px}
+      .mt-topbar{padding:16px 16px 14px}
+      .mt-topbar h2{font-size:20px}
+      .mt-progress{width:140px}
+      .mt-est-main{padding:16px}
+      .mt-slide h3{font-size:25px}
+      .mt-grid.mt-grid-2{grid-template-columns:1fr}
+      .mt-summary{grid-template-columns:1fr}
+      .mt-guideStage{padding:16px}
+      .mt-guideSplit{grid-template-columns:1fr}
+      .mt-guideViewport{min-height:640px}
+      .mt-homeScale{grid-template-columns:repeat(2,1fr)}
+      .mt-legend{grid-template-columns:1fr}
+      .mt-binary{flex-wrap:wrap}
+    }
+
+    /*
+     * Custom modifications added per user request
+     * --------------------------------------------------
+     * These overrides clean up the guide visuals, adjust navigation,
+     * and add a clear heading to the estimator.
+     */
+
+    /* Hide the step meta labels (Group/Slide) in the guide header */
+    .mt-guide .mt-stepmeta {
+      display: none;
+    }
+
+    /* Remove the radial and linear glow overlays on the guide stage */
+    .mt-guideStage::before,
+    .mt-guideStage::after {
+      background: none !important;
+    }
+
+    /* Hide the dot progress indicator for guide slides */
+    .mt-guideDots {
+      display: none !important;
+    }
+
+    /* Stretch the guide navigation across the header and evenly space controls */
+    .mt-guideNav {
+      flex: 1 1 auto;
+      justify-content: space-between;
+      padding-top: 0;
+    }
+
+    /* Estimator custom header */
+    .mt-est-head {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+    }
+    .mt-est-head img {
+      width: 32px;
+      height: 32px;
+    }
+    .mt-est-head span {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--mt-black);
+    }
+  </style>
+</head>
+<body>
+  <!-- Wrap everything in a root element for WordPress isolation -->
+  <div id="mtGeneratorRoot">
+  <div class="mt-wrap">
+
+    <!-- Removed the original heading block to keep the interface clean. -->
+
+    <div class="mt-shell">
+      <section class="mt-card mt-estimator" aria-label="Generator estimator">
+        <!-- Added custom estimator header with icon and title -->
+        <div class="mt-est-head">
+          <img src="icon.png" alt="Backup Generator Estimator icon">
+          <span>Backup Generator Estimator</span>
+        </div>
+        <div class="mt-topbar">
+          <div>
+            <h2>Estimator</h2>
+            <div class="mt-progress" aria-hidden="true"><span id="mtEstimatorProgress"></span></div>
+          </div>
+          <div class="mt-stepmeta">
+            <div id="mtEstimatorStepLabel">Step 1 of 6</div>
+            <div id="mtEstimatorStepName">Backup Goal</div>
+          </div>
+        </div>
+
+        <div class="mt-est-main">
+          <div class="mt-slide is-active" data-step="0">
+            <h3>What Do You Want Powered During An Outage?</h3>
+            <p class="mt-sub">Choose the level of backup power that matches how you want your home to function when the grid goes down.</p>
+            <!-- Use a two‑column layout on desktop for backup tier choices -->
+            <div class="mt-grid mt-grid-2" id="backupTierGrid">
+              <button class="mt-choice" data-key="backupTier" data-value="Essentials Only" type="button">
+                <div class="mt-choiceIcon">
+                  <svg viewBox="0 0 24 24"><path d="M12 3v8"></path><path d="M8 7h8"></path><path d="M6 14h12"></path><path d="M8 18h8"></path><path d="M10 21h4"></path></svg>
+                </div>
+                <div class="mt-choiceBody"><strong>Essentials Only</strong><span>Fridge, lights, internet, and a few must-haves.</span></div>
+              </button>
+              <button class="mt-choice" data-key="backupTier" data-value="Comfort Living" type="button">
+                <div class="mt-choiceIcon">
+                  <svg viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M7 8h10"></path><path d="M7 16h10"></path><path d="M5 19v-8a2 2 0 0 1 2-2"></path><path d="M19 19v-8a2 2 0 0 0-2-2"></path></svg>
+                </div>
+                <div class="mt-choiceBody"><strong>Comfort Living</strong><span>Essentials plus more convenience like kitchen use and better day-to-day comfort.</span></div>
+              </button>
+              <button class="mt-choice" data-key="backupTier" data-value="Whole Home Backup" type="button">
+                <div class="mt-choiceIcon">
+                  <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-6h6v6"></path></svg>
+                </div>
+                <div class="mt-choiceBody"><strong>Whole Home Backup</strong><span>Keep your home running more like normal during an outage.</span></div>
+              </button>
+              <button class="mt-choice" data-key="backupTier" data-value="Large Property / Extras" type="button">
+                <div class="mt-choiceIcon">
+                  <svg viewBox="0 0 24 24"><path d="M4 17l4-8 4 8"></path><path d="M8 9V5"></path><path d="M14 19l2-4 2 4"></path><path d="M18 15v-6"></path><circle cx="18" cy="7" r="2"></circle></svg>
+                </div>
+                <div class="mt-choiceBody"><strong>Large Property / Extras</strong><span>For homes with bigger demands like pools, EV charging, hot tubs, or other high-power needs.</span></div>
+              </button>
+            </div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost" type="button" disabled>Back</button>
+              <button class="mt-btn" type="button" id="next0" disabled>Continue</button>
+            </div>
+          </div>
+
+          <div class="mt-slide" data-step="1">
+            <h3>How Big Is Your Home?</h3>
+            <p class="mt-sub">Home size helps estimate overall electrical demand, especially when larger systems and cooling are involved.</p>
+            <div class="mt-grid mt-grid-2" id="homeSizeGrid">
+              <button class="mt-choice" data-key="homeSize" data-value="Under 1,500 sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6"></path><path d="M6 10v8h12v-8"></path><path d="M9 18v-5h6v5"></path></svg></div><div class="mt-choiceBody"><strong>Under 1,500 sq ft</strong><span>Often lower base demand with fewer major loads.</span></div></button>
+              <button class="mt-choice" data-key="homeSize" data-value="1,500–2,500 sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"></path><path d="M5 10v9h14v-9"></path><path d="M8 19v-6h3v6"></path><path d="M13 13h3v3h-3z"></path></svg></div><div class="mt-choiceBody"><strong>1,500–2,500 sq ft</strong><span>Balanced mid-range demand for many homes.</span></div></button>
+              <button class="mt-choice" data-key="homeSize" data-value="2,500–3,500 sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M2 12l10-8 10 8"></path><path d="M4 11v9h16v-9"></path><path d="M7 13h3v3H7z"></path><path d="M14 13h3v3h-3z"></path></svg></div><div class="mt-choiceBody"><strong>2,500–3,500 sq ft</strong><span>Higher comfort and appliance demand.</span></div></button>
+              <button class="mt-choice" data-key="homeSize" data-value="3,500+ sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M2 12l10-8 10 8"></path><path d="M4 11v9h16v-9"></path><path d="M6 14h12"></path><path d="M7 12V8h10v4"></path></svg></div><div class="mt-choiceBody"><strong>3,500+ sq ft</strong><span>Often requires a larger standby range.</span></div></button>
+            </div>
+
+            <div id="acFollowup" style="display:none; margin-top:18px;">
+              <div class="mt-multiHeader">Cooling Follow-Up</div>
+              <h4 style="font-size:18px; margin-bottom:10px;">Do You Want Your Air Conditioning Running During An Outage?</h4>
+              <div class="mt-binary">
+                <button class="mt-pill" type="button" data-key="hasAC" data-value="Yes">Yes</button>
+                <button class="mt-pill" type="button" data-key="hasAC" data-value="No">No</button>
+              </div>
+            </div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost prevBtn" type="button">Back</button>
+              <button class="mt-btn" type="button" id="next1" disabled>Continue</button>
+            </div>
+          </div>
+
+          <div class="mt-slide" data-step="2">
+            <h3>How Is Your Home Heated?</h3>
+            <p class="mt-sub">Heating type can make a big difference in generator size, especially when electric heat is involved.</p>
+            <div class="mt-grid" id="heatingTypeGrid">
+              <button class="mt-choice" data-key="heatingType" data-value="Natural Gas" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5.5 5 9a5 5 0 1 1-10 0c0-3.5 3-6 5-9z"></path></svg></div><div class="mt-choiceBody"><strong>Natural Gas</strong><span>Lower electrical demand compared to full electric heating.</span></div></button>
+              <button class="mt-choice" data-key="heatingType" data-value="Electric Heat" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M13 2L6 13h5l-1 9 7-11h-5z"></path></svg></div><div class="mt-choiceBody"><strong>Electric Heat</strong><span>Usually requires more generator capacity.</span></div></button>
+              <button class="mt-choice" data-key="heatingType" data-value="Heat Pump" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v3"></path><path d="M12 19v3"></path><path d="M2 12h3"></path><path d="M19 12h3"></path><path d="M4.9 4.9l2.1 2.1"></path><path d="M17 17l2.1 2.1"></path><path d="M19.1 4.9L17 7"></path><path d="M7 17l-2.1 2.1"></path></svg></div><div class="mt-choiceBody"><strong>Heat Pump</strong><span>Efficient, but still important to account for in sizing.</span></div></button>
+              <button class="mt-choice" data-key="heatingType" data-value="Not Sure" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.1-1.7 2.2"></path><circle cx="12" cy="17" r=".7" fill="currentColor" stroke="none"></circle></svg></div><div class="mt-choiceBody"><strong>Not Sure</strong><span>Use a balanced estimate for now and explain the difference in the guide.</span></div></button>
+            </div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost prevBtn" type="button">Back</button>
+              <button class="mt-btn" type="button" id="next2" disabled>Continue</button>
+            </div>
+          </div>
+
+          <div class="mt-slide" data-step="3">
+            <h3>Do You Have Any Of These High-Power Items?</h3>
+            <p class="mt-sub">Select any that apply. These can increase the generator size needed for reliable backup power.</p>
+            <div class="mt-grid mt-grid-2" id="extrasGrid">
+              <button class="mt-choice" type="button" data-toggle-key="hasWellPump"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 2v7"></path><path d="M7 10h10"></path><path d="M9 10v8"></path><path d="M15 10v8"></path><path d="M6 18h12"></path></svg></div><div class="mt-choiceBody"><strong>Well Pump</strong><span>Water supply equipment can add meaningful demand.</span></div></button>
+              <button class="mt-choice" type="button" data-toggle-key="hasPool"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M4 16c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"></path><path d="M4 20c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"></path><path d="M6 4h12"></path><path d="M8 4v8"></path><path d="M16 4v8"></path></svg></div><div class="mt-choiceBody"><strong>Pool</strong><span>Pumps and related equipment can push the estimate higher.</span></div></button>
+              <button class="mt-choice" type="button" data-toggle-key="hasHotTub"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M6 12v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-5"></path><path d="M8 7c0-1 1-2 2-2"></path><path d="M12 7c0-1 1-2 2-2"></path><path d="M16 7c0-1 1-2 2-2"></path></svg></div><div class="mt-choiceBody"><strong>Hot Tub</strong><span>Heating and circulation loads can increase system size quickly.</span></div></button>
+              <button class="mt-choice" type="button" data-toggle-key="hasEV"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M5 15l2-5h10l2 5"></path><path d="M4 15h16"></path><circle cx="8" cy="18" r="2"></circle><circle cx="16" cy="18" r="2"></circle><path d="M17 5v3"></path><path d="M15.5 6.5h3"></path></svg></div><div class="mt-choiceBody"><strong>EV Charger</strong><span>Charging during an outage requires serious backup capacity.</span></div></button>
+              <button class="mt-choice" type="button" data-toggle-key="hasWorkshop"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M7 7l10 10"></path><path d="M14 6l4 4"></path><path d="M6 14l4 4"></path><path d="M5 19l3-3"></path><path d="M16 8l3-3"></path></svg></div><div class="mt-choiceBody"><strong>Workshop / Large Tools</strong><span>Compressors, saws, and bigger tools can add hidden demand.</span></div></button>
+            </div>
+            <div class="mt-chipRow" id="selectedExtras"></div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost prevBtn" type="button">Back</button>
+              <button class="mt-btn" type="button" id="next3">Continue</button>
+            </div>
+          </div>
+
+          <div class="mt-slide" data-step="4">
+            <h3>What Fuel Source Do You Have Available?</h3>
+            <p class="mt-sub">Fuel availability helps determine which standby generator setup makes the most sense for your home.</p>
+            <div class="mt-grid" id="fuelTypeGrid">
+              <button class="mt-choice" data-key="fuelType" data-value="Natural Gas" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5.5 5 9a5 5 0 1 1-10 0c0-3.5 3-6 5-9z"></path><path d="M9 13c1 .8 2 1.2 3 1.2s2-.4 3-1.2"></path></svg></div><div class="mt-choiceBody"><strong>Natural Gas</strong><span>Often the easiest standby option when utility gas is already available.</span></div></button>
+              <button class="mt-choice" data-key="fuelType" data-value="Propane Tank" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="3"></rect><path d="M10 5V3h4v2"></path><path d="M8 12h8"></path></svg></div><div class="mt-choiceBody"><strong>Propane Tank</strong><span>A strong option for homes without natural gas service.</span></div></button>
+              <button class="mt-choice" data-key="fuelType" data-value="Not Sure" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.1-1.7 2.2"></path><circle cx="12" cy="17" r=".7" fill="currentColor" stroke="none"></circle></svg></div><div class="mt-choiceBody"><strong>Not Sure</strong><span>Show a general estimate and explain the differences in the guide.</span></div></button>
+            </div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost prevBtn" type="button">Back</button>
+              <button class="mt-btn" type="button" id="next4" disabled>See My Estimate</button>
+            </div>
+          </div>
+
+          <div class="mt-slide" data-step="5">
+            <h3>Your Recommended Generator System</h3>
+            <p class="mt-sub">Based on your selections, here is the estimated generator size range that fits your home best. This is the fast planning version before site-specific install details are added later.</p>
+            <div class="mt-resultHero">
+              <div class="mt-resultLabel">Recommended Size</div>
+              <div class="mt-resultKw" id="resultKW">22–24kW Standby Generator</div>
+              <div class="mt-resultPrice" id="resultPrice">$11,000 – $17,000 Installed</div>
+            </div>
+            <div class="mt-summary">
+              <div class="mt-summaryItem"><b>Backup Goal</b><span id="sumBackup">—</span></div>
+              <div class="mt-summaryItem"><b>Home Size</b><span id="sumHome">—</span></div>
+              <div class="mt-summaryItem"><b>Cooling</b><span id="sumAC">—</span></div>
+              <div class="mt-summaryItem"><b>Heating</b><span id="sumHeat">—</span></div>
+              <div class="mt-summaryItem"><b>Extras</b><span id="sumExtras">—</span></div>
+              <div class="mt-summaryItem"><b>Fuel</b><span id="sumFuel">—</span></div>
+            </div>
+            <ul class="mt-includes">
+              <li><span>Generator</span><strong id="incGen">Included</strong></li>
+              <li><span>Transfer Switch</span><strong>Included</strong></li>
+              <li><span>Electrical Installation</span><strong>Included</strong></li>
+              <li><span>Standard Pad / Base</span><strong>Included</strong></li>
+              <li><span>Basic Materials</span><strong>Included</strong></li>
+            </ul>
+            <div class="mt-placeholder">
+              <strong>Future Quote Form Placeholder</strong>
+              <p>Keep this area reserved for the next phase. No form scripts, no CRM posting, and no email handling are built into this version yet.</p>
+            </div>
+            <div class="mt-actions">
+              <button class="mt-btnGhost prevBtn" type="button">Back</button>
+              <button class="mt-btn mt-btnPrimary" type="button" id="restartBtn">Start Over</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-card mt-guide" aria-label="Generator guide slider">
+        <div class="mt-topbar">
+          <div>
+            <h2>Guide</h2>
+            <div class="mt-progress" aria-hidden="true"><span id="mtGuideProgress"></span></div>
+          </div>
+          <div class="mt-stepmeta">
+            <div id="mtGuideGroupLabel">Group A</div>
+            <div id="mtGuideSlideLabel">Slide 1 of 18</div>
+          </div>
+          <!-- Navigation controls moved from footer to header -->
+          <div class="mt-guideNav">
+            <button class="mt-navBtn" type="button" id="guidePrev" aria-label="Previous guide slide">‹</button>
+            <div class="mt-guideDots" id="guideDots"></div>
+            <div class="mt-gcount" id="guideCount">1 / 18</div>
+            <button class="mt-navBtn" type="button" id="guideNext" aria-label="Next guide slide">›</button>
+          </div>
+        </div>
+
+        <div class="mt-guideStage">
+          <div class="mt-guideViewport" id="mtGuideViewport">
+            <article class="mt-gslide is-active" data-group="A" data-index="0">
+              <div class="mt-guideTag">Guide Group A • Backup Goals</div>
+              <h3 class="mt-guideTitle">Why Backup Power Matters</h3>
+              <p class="mt-guideText">Power outages can affect more than convenience. Refrigerated food, home comfort, internet access, lighting, and even safety can all become problems when a home loses power. A standby generator helps keep the most important parts of the house running when the grid goes down.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>What Homeowners Usually Feel First</h4>
+                  <ul class="mt-factList">
+                    <li><strong>Food Loss</strong><span>Fridges and freezers only have so much safe time before losses start stacking up.</span></li>
+                    <li><strong>Comfort Drops Fast</strong><span>Cooling, heating, hot water, and normal routines stop feeling automatic.</span></li>
+                    <li><strong>Safety And Function</strong><span>Lights, internet, garage access, and everyday basics all become bigger problems than people expect.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Why This Slide Exists</h4>
+                  <div class="mt-impactCard">
+                    <div>
+                      <strong style="display:block;font-size:20px;margin-bottom:8px;">This estimator starts with the lifestyle goal first.</strong>
+                      <p style="color:rgba(255,255,255,.8);line-height:1.55;font-size:14px;">That keeps the left slider simple while the right side explains the engineering and installation details we intentionally cut from the form.</p>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.78);font-weight:800;"><span>Fast to use</span><span>Still informative</span></div>
+                      <div class="mt-impactMeter"><span style="width:82%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="A" data-index="1">
+              <div class="mt-guideTag">Guide Group A • Tier Comparison</div>
+              <h3 class="mt-guideTitle">Choose The Right Level Of Backup</h3>
+              <p class="mt-guideText">Not every home needs the same type of generator setup. Some homeowners only want to protect a few essentials, while others want whole-home comfort during an outage. The right system depends on how you live and what you want to keep running.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Backup Tiers</h4>
+                  <ul class="mt-tierList" id="guideTierList">
+                    <li data-match="Essentials Only"><strong>Essentials Only</strong><span>Covers basics like refrigeration, lights, and internet.</span></li>
+                    <li data-match="Comfort Living"><strong>Comfort Living</strong><span>Adds more convenience and more daily functionality.</span></li>
+                    <li data-match="Whole Home Backup"><strong>Whole Home Backup</strong><span>Supports a more normal routine during outages.</span></li>
+                    <li data-match="Large Property / Extras"><strong>Large Property / Extras</strong><span>Accounts for homes with larger electrical demands.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Selection Sync</h4>
+                  <p style="color:rgba(255,255,255,.82);line-height:1.58;font-size:14px;">When users choose a backup goal on the estimator, this slide highlights the matching tier automatically. The guide can still be browsed manually without changing the estimator.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="A" data-index="2">
+              <div class="mt-guideTag">Guide Group A • Typical Size Bands</div>
+              <h3 class="mt-guideTitle">Generator Size Tiers At A Glance</h3>
+              <p class="mt-guideText">As backup expectations increase, the generator system usually needs to increase too. Smaller systems can cover basics, while larger systems are better suited for full-home comfort and added electrical loads.</p>
+              <div class="mt-sizeBands" id="guideSizeBands">
+                <div class="mt-band" data-band="band1"><div><strong>7–10kW</strong><span>Often fits smaller essential-use scenarios.</span></div><b>Entry</b></div>
+                <div class="mt-band" data-band="band2"><div><strong>12–18kW</strong><span>Common for comfort-focused backup.</span></div><b>Mid</b></div>
+                <div class="mt-band" data-band="band3"><div><strong>20–26kW</strong><span>More common for whole-home coverage.</span></div><b>Full</b></div>
+                <div class="mt-band" data-band="band4"><div><strong>26kW+</strong><span>For larger homes and extra power demands.</span></div><b>Max</b></div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="B" data-index="3">
+              <div class="mt-guideTag">Guide Group B • Home Size</div>
+              <h3 class="mt-guideTitle">Why Home Size Affects Generator Sizing</h3>
+              <p class="mt-guideText">Larger homes usually come with more circuits, more lighting, more appliances, and more comfort expectations. Square footage does not tell the whole story, but it gives a useful starting point for estimating the right generator range.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>What Home Size Tells Us</h4>
+                  <ul class="mt-factList">
+                    <li><strong>More Rooms Usually Means More Demand</strong><span>Lighting, outlets, entertainment, and convenience loads tend to scale up with house size.</span></li>
+                    <li><strong>Comfort Expectations Rise Too</strong><span>Bigger homes are more likely to expect cooling, cooking, and normal routines during an outage.</span></li>
+                    <li><strong>It Is A Starting Point</strong><span>That is why this short form pairs home size with AC, heating, extras, and fuel instead of asking 30 technical questions.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Estimator Strategy</h4>
+                  <p style="color:rgba(255,255,255,.82);line-height:1.58;font-size:14px;">We keep the left side marketing-friendly by asking broad power signals instead of full circuit math. The guide handles the explanation load so the form does not become a chore.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="B" data-index="4">
+              <div class="mt-guideTag">Guide Group B • Home Range Comparison</div>
+              <h3 class="mt-guideTitle">Typical Demand By Home Size</h3>
+              <p class="mt-guideText">Smaller homes often need less backup capacity, while larger homes tend to require more. This becomes more obvious once comfort systems, kitchen appliances, and added conveniences are involved.</p>
+              <div class="mt-guidePanel">
+                <h4>Selected Home Range</h4>
+                <div class="mt-homeScale" id="guideHomeScale">
+                  <div class="mt-house" data-match="Under 1,500 sq ft"><div class="mt-houseShape" style="height:68px"></div><div>Under 1,500 sq ft</div></div>
+                  <div class="mt-house" data-match="1,500–2,500 sq ft"><div class="mt-houseShape" style="height:88px"></div><div>1,500–2,500 sq ft</div></div>
+                  <div class="mt-house" data-match="2,500–3,500 sq ft"><div class="mt-houseShape" style="height:110px"></div><div>2,500–3,500 sq ft</div></div>
+                  <div class="mt-house" data-match="3,500+ sq ft"><div class="mt-houseShape" style="height:134px"></div><div>3,500+ sq ft</div></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="B" data-index="5">
+              <div class="mt-guideTag">Guide Group B • Cooling Impact</div>
+              <h3 class="mt-guideTitle">Air Conditioning Can Change Everything</h3>
+              <p class="mt-guideText">Air conditioning is one of the biggest factors in generator sizing. If you want cooling during an outage, the generator often needs to be sized much higher than it would be for lights, refrigeration, and basic circuits alone.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Why AC Matters</h4>
+                  <ul class="mt-factList">
+                    <li><strong>Cooling Adds Real Load</strong><span>AC pushes the system requirement up faster than many homeowners expect.</span></li>
+                    <li><strong>Comfort Expectations Shift</strong><span>Wanting the house to stay cool changes the size tier much more than wanting lights and internet only.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Current Selection</h4>
+                  <div class="mt-impactCard">
+                    <div>
+                      <strong style="display:block;font-size:20px;margin-bottom:8px;">Cooling During Outage</strong>
+                      <p style="color:rgba(255,255,255,.8);line-height:1.55;font-size:14px;">This card gets emphasized when the estimator answer for AC is Yes.</p>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.78);font-weight:800;"><span>Load impact</span><span id="acImpactLabel">Moderate</span></div>
+                      <div class="mt-impactMeter"><span id="acImpactMeter" style="width:46%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="C" data-index="6">
+              <div class="mt-guideTag">Guide Group C • Heating</div>
+              <h3 class="mt-guideTitle">Gas Heat vs Electric Heat</h3>
+              <p class="mt-guideText">Homes with natural gas heat usually place less electrical demand on a generator than homes with electric heating systems. Electric heat can require a much larger generator because the heating load itself draws significant power.</p>
+              <div class="mt-guidePanel">
+                <h4>Heating Type Comparison</h4>
+                <ul class="mt-tierList" id="guideHeatingList">
+                  <li data-match="Natural Gas"><strong>Natural Gas</strong><span>Usually easier on the generator because the heating load is not fully electric.</span></li>
+                  <li data-match="Electric Heat"><strong>Electric Heat</strong><span>Often requires more generator capacity because the heating load itself is electrical.</span></li>
+                  <li data-match="Heat Pump"><strong>Heat Pump</strong><span>More efficient than traditional electric resistance heat, but still important to account for.</span></li>
+                  <li data-match="Not Sure"><strong>Not Sure</strong><span>Use a balanced estimate now and refine later during the exact quote stage.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="C" data-index="7">
+              <div class="mt-guideTag">Guide Group C • Heat Pump Focus</div>
+              <h3 class="mt-guideTitle">What About Heat Pumps?</h3>
+              <p class="mt-guideText">Heat pumps are often more efficient than traditional electric resistance heat, but they still need to be accounted for when sizing a backup system. Startup demand and outdoor unit operation can affect the recommendation.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Why They Still Matter</h4>
+                  <ul class="mt-factList">
+                    <li><strong>Startup Demand Exists</strong><span>Even efficient systems can create a larger moment of demand when they first kick on.</span></li>
+                    <li><strong>Heating And Cooling Role</strong><span>Heat pumps often matter in both seasons, not just in winter.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>When This Slide Leads</h4>
+                  <p style="color:rgba(255,255,255,.82);line-height:1.58;font-size:14px;">If the estimator answer is Heat Pump, this guide slide is one of the most important ones in Group C and should feel visibly emphasized.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="C" data-index="8">
+              <div class="mt-guideTag">Guide Group C • Winter Outage Risk</div>
+              <h3 class="mt-guideTitle">Heating Matters Most When Comfort Becomes Safety</h3>
+              <p class="mt-guideText">In colder conditions, backup power is not just about convenience. Reliable heating can help protect pipes, preserve indoor comfort, and keep the household functioning during a winter outage.</p>
+              <div class="mt-guidePanel">
+                <h4>Why This Stays In The Guide</h4>
+                <ul class="mt-factList">
+                  <li><strong>Simple Form, Smarter Explanation</strong><span>We intentionally avoid asking users about panel size, conductor sizing, or circuit details here.</span></li>
+                  <li><strong>The Guide Carries The Depth</strong><span>This is where the estimator stays smooth while the right side explains why heating still matters.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="D" data-index="9">
+              <div class="mt-guideTag">Guide Group D • High-Power Items</div>
+              <h3 class="mt-guideTitle">Some Loads Add Up Fast</h3>
+              <p class="mt-guideText">A few special items can change generator size more than people expect. Well pumps, workshop tools, hot tubs, and similar equipment can push a home into a larger standby category even when the rest of the home seems fairly typical.</p>
+              <div class="mt-guidePanel">
+                <h4>Why We Ask About Extras</h4>
+                <ul class="mt-tierList" id="guideExtrasGeneral">
+                  <li data-match-extra="hasWellPump"><strong>Well Pump</strong><span>Water supply equipment often deserves separate attention.</span></li>
+                  <li data-match-extra="hasHotTub"><strong>Hot Tub</strong><span>Heating and circulation can move the estimate upward fast.</span></li>
+                  <li data-match-extra="hasWorkshop"><strong>Workshop / Large Tools</strong><span>Bigger tools create hidden demand most basic calculators miss.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="D" data-index="10">
+              <div class="mt-guideTag">Guide Group D • EV Emphasis</div>
+              <h3 class="mt-guideTitle">EV Charging Requires Serious Backup Capacity</h3>
+              <p class="mt-guideText">If you want to charge an electric vehicle during an outage, generator size can increase significantly. EV charging adds a major load, which is why it should be considered early in the estimate instead of being left as an afterthought.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Typical EV Reality</h4>
+                  <ul class="mt-factList">
+                    <li><strong>Charging Is Not A Tiny Add-On</strong><span>It often pushes the recommendation into a higher system tier.</span></li>
+                    <li><strong>Planning Matters</strong><span>Users may not need full-speed charging during an outage, but the load still needs to be discussed.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Selection Sync</h4>
+                  <div class="mt-impactCard">
+                    <div>
+                      <strong style="display:block;font-size:20px;margin-bottom:8px;">EV Charger Selected</strong>
+                      <p style="color:rgba(255,255,255,.8);line-height:1.55;font-size:14px;">This slide becomes emphasized when the user selects EV Charger on the estimator.</p>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.78);font-weight:800;"><span>Power pressure</span><span>High</span></div>
+                      <div class="mt-impactMeter"><span style="width:84%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="D" data-index="11">
+              <div class="mt-guideTag">Guide Group D • Pools And Pumps</div>
+              <h3 class="mt-guideTitle">Pools, Pumps, And Outdoor Equipment Matter Too</h3>
+              <p class="mt-guideText">Pool systems, well pumps, and similar equipment often get overlooked in basic calculators. These loads can meaningfully affect system size, especially when paired with air conditioning or whole-home backup goals.</p>
+              <div class="mt-guidePanel">
+                <h4>What This Group Tries To Catch</h4>
+                <ul class="mt-tierList" id="guideExtrasPool">
+                  <li data-match-extra="hasPool"><strong>Pool</strong><span>Pool pumps and related equipment can move a home into a larger recommendation band.</span></li>
+                  <li data-match-extra="hasWellPump"><strong>Well Pump</strong><span>Essential water supply loads deserve more attention than many calculators give them.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="E" data-index="12">
+              <div class="mt-guideTag">Guide Group E • Fuel Type</div>
+              <h3 class="mt-guideTitle">Natural Gas And Propane Are The Most Common Standby Options</h3>
+              <p class="mt-guideText">Most home standby systems run on either natural gas or propane. Natural gas can be convenient when utility gas is already available. Propane is often a strong option for homes outside natural gas service areas.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Fuel Comparison</h4>
+                  <ul class="mt-tierList" id="guideFuelList">
+                    <li data-match="Natural Gas"><strong>Natural Gas</strong><span>Convenient when service is already available at the home.</span></li>
+                    <li data-match="Propane Tank"><strong>Propane Tank</strong><span>A common standby option for homes without utility gas access.</span></li>
+                    <li data-match="Not Sure"><strong>Not Sure</strong><span>Use the estimator now and confirm the best path later.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Why This Stayed Simple</h4>
+                  <p style="color:rgba(255,255,255,.82);line-height:1.58;font-size:14px;">Instead of asking about tank size, pressure, and routing in the estimator, we ask the simple fuel question first and explain the extra install details later in the guide.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="E" data-index="13">
+              <div class="mt-guideTag">Guide Group E • Runtime And Planning</div>
+              <h3 class="mt-guideTitle">Fuel Supply Affects Runtime And Planning</h3>
+              <p class="mt-guideText">A standby system is only as useful as the fuel available to support it. Natural gas systems rely on utility service, while propane systems depend on stored fuel capacity. That is one reason fuel choice matters beyond generator size alone.</p>
+              <div class="mt-guidePanel">
+                <h4>Guide-Only Detail</h4>
+                <ul class="mt-factList">
+                  <li><strong>Runtime Questions Belong Here</strong><span>This is the right place to explain fuel planning without cluttering the estimator flow.</span></li>
+                  <li><strong>Good Estimate First</strong><span>Exact routing, regulator details, and site conditions can wait until the full quote stage.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="E" data-index="14">
+              <div class="mt-guideTag">Guide Group E • System Layout</div>
+              <h3 class="mt-guideTitle">A Standby Generator System Includes More Than The Generator</h3>
+              <p class="mt-guideText">The full setup usually includes the generator, a transfer switch, fuel connection, electrical work, and placement at the home. Final pricing depends on site conditions, but the estimator helps establish the right starting range.</p>
+              <div class="mt-guideVisual">
+                <h4>Typical Standby System</h4>
+                <div class="mt-systemDiag">
+                  <div class="mt-systemNode"><div><strong>Generator</strong><span>Main standby power source sized to the home.</span></div><b>1</b></div>
+                  <div class="mt-systemNode"><div><strong>Transfer Switch</strong><span>Moves power safely between utility and generator.</span></div><b>2</b></div>
+                  <div class="mt-systemNode"><div><strong>Fuel Connection</strong><span>Natural gas or propane feed that supports runtime.</span></div><b>3</b></div>
+                  <div class="mt-systemNode"><div><strong>Home Panel</strong><span>Where the generator-backed circuits are served.</span></div><b>4</b></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="F" data-index="15">
+              <div class="mt-guideTag">Guide Group F • Result Logic</div>
+              <h3 class="mt-guideTitle">How Your Generator Estimate Was Built</h3>
+              <p class="mt-guideText">Your recommendation is based on the backup level you want, the size of your home, your heating type, whether you want air conditioning, added high-power items, and the fuel assumptions selected along the way.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Current Answer Summary</h4>
+                  <ul class="mt-summaryTokens" id="guideSummaryTokens">
+                    <li><strong>Backup Goal</strong><span id="gtBackup">—</span></li>
+                    <li><strong>Home Size</strong><span id="gtHome">—</span></li>
+                    <li><strong>Cooling</strong><span id="gtAC">—</span></li>
+                    <li><strong>Heating</strong><span id="gtHeat">—</span></li>
+                    <li><strong>Extras</strong><span id="gtExtras">—</span></li>
+                    <li><strong>Fuel</strong><span id="gtFuel">—</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Build Philosophy</h4>
+                  <p style="color:rgba(255,255,255,.82);line-height:1.58;font-size:14px;">This estimator is meant to feel like a fast consultation, not a full engineering worksheet. The short form gives a strong planning range and the guide explains the logic behind it.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="F" data-index="16">
+              <div class="mt-guideTag">Guide Group F • Final Cost Factors</div>
+              <h3 class="mt-guideTitle">What Affects Final Installation Cost</h3>
+              <p class="mt-guideText">The estimate shown here is a strong planning range, but final installation cost can still change based on electrical panel conditions, generator placement, fuel line routing, permits, and site-specific construction needs.</p>
+              <div class="mt-guidePanel">
+                <h4>The Things We Intentionally Cut From The Main Estimator</h4>
+                <ul class="mt-installList">
+                  <li><strong>Panel Size And Condition</strong><span>Useful for the final quote, but too technical for the first pass.</span></li>
+                  <li><strong>Distance From Panel Or Gas Source</strong><span>Routing and trenching change labor and materials.</span></li>
+                  <li><strong>Pad Conditions, Permits, HOA, And Site Access</strong><span>All important later, but not needed to deliver the fast planning result.</span></li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="mt-gslide" data-group="F" data-index="17">
+              <div class="mt-guideTag">Guide Group F • What Happens Next</div>
+              <h3 class="mt-guideTitle">What Happens Next</h3>
+              <p class="mt-guideText">Once the right generator size range is identified, the next step is confirming the exact system, installation conditions, and final quote. That part usually includes a site review, equipment confirmation, and a detailed installation plan.</p>
+              <div class="mt-guideSplit">
+                <div class="mt-guidePanel">
+                  <h4>Typical Next Steps</h4>
+                  <ul class="mt-factList">
+                    <li><strong>Confirm Exact Generator Model</strong><span>Match the right equipment to the final home and site conditions.</span></li>
+                    <li><strong>Review Installation Conditions</strong><span>Panel, fuel, routing, and pad details get tightened up here.</span></li>
+                    <li><strong>Move Into Final Quote</strong><span>This is where the reserved form / CTA area on the estimator result would eventually connect.</span></li>
+                  </ul>
+                </div>
+                <div class="mt-guideVisual">
+                  <h4>Current Build Status</h4>
+                  <div class="mt-impactCard">
+                    <div>
+                      <strong style="display:block;font-size:20px;margin-bottom:8px;">UI + Sync First</strong>
+                      <p style="color:rgba(255,255,255,.8);line-height:1.55;font-size:14px;">This file intentionally stops before form submission logic. The next phase can wire the result CTA into the final lead form and posting flow.</p>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.78);font-weight:800;"><span>Current scope</span><span>Ready</span></div>
+                      <div class="mt-impactMeter"><span style="width:76%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          <!-- New dynamically generated option slides -->
+          <article class="mt-gslide" data-group="A" data-index="18">
+            <div class="mt-guideTag">Guide Group A • Essentials Only</div>
+            <h3 class="mt-guideTitle">Essentials Only Backup</h3>
+            <p class="mt-guideText">This slide provides details about the Essentials Only backup tier.</p>
+          </article>
+          <article class="mt-gslide" data-group="A" data-index="19">
+            <div class="mt-guideTag">Guide Group A • Comfort Living</div>
+            <h3 class="mt-guideTitle">Comfort Living Backup</h3>
+            <p class="mt-guideText">This slide provides details about the Comfort Living backup tier.</p>
+          </article>
+          <article class="mt-gslide" data-group="A" data-index="20">
+            <div class="mt-guideTag">Guide Group A • Whole Home Backup</div>
+            <h3 class="mt-guideTitle">Whole Home Backup</h3>
+            <p class="mt-guideText">This slide provides details about the Whole Home Backup tier.</p>
+          </article>
+          <article class="mt-gslide" data-group="A" data-index="21">
+            <div class="mt-guideTag">Guide Group A • Large Property / Extras</div>
+            <h3 class="mt-guideTitle">Large Property / Extras</h3>
+            <p class="mt-guideText">This slide provides details about the Large Property / Extras backup tier.</p>
+          </article>
+          <article class="mt-gslide" data-group="B" data-index="22">
+            <div class="mt-guideTag">Guide Group B • Under 1,500 sq ft</div>
+            <h3 class="mt-guideTitle">Under 1,500 sq&nbsp;ft</h3>
+            <p class="mt-guideText">This slide provides details about homes under 1,500&nbsp;sq&nbsp;ft.</p>
+          </article>
+          <article class="mt-gslide" data-group="B" data-index="23">
+            <div class="mt-guideTag">Guide Group B • 1,500–2,500 sq ft</div>
+            <h3 class="mt-guideTitle">1,500–2,500 sq&nbsp;ft</h3>
+            <p class="mt-guideText">This slide provides details about homes sized 1,500–2,500&nbsp;sq&nbsp;ft.</p>
+          </article>
+          <article class="mt-gslide" data-group="B" data-index="24">
+            <div class="mt-guideTag">Guide Group B • 2,500–3,500 sq ft</div>
+            <h3 class="mt-guideTitle">2,500–3,500 sq&nbsp;ft</h3>
+            <p class="mt-guideText">This slide provides details about homes sized 2,500–3,500&nbsp;sq&nbsp;ft.</p>
+          </article>
+          <article class="mt-gslide" data-group="B" data-index="25">
+            <div class="mt-guideTag">Guide Group B • 3,500+ sq ft</div>
+            <h3 class="mt-guideTitle">3,500+ sq&nbsp;ft</h3>
+            <p class="mt-guideText">This slide provides details about homes sized 3,500+&nbsp;sq&nbsp;ft.</p>
+          </article>
+          <article class="mt-gslide" data-group="C" data-index="26">
+            <div class="mt-guideTag">Guide Group C • Natural Gas Heating</div>
+            <h3 class="mt-guideTitle">Natural Gas Heating</h3>
+            <p class="mt-guideText">This slide provides details about natural gas heating.</p>
+          </article>
+          <article class="mt-gslide" data-group="C" data-index="27">
+            <div class="mt-guideTag">Guide Group C • Electric Heat</div>
+            <h3 class="mt-guideTitle">Electric Heat</h3>
+            <p class="mt-guideText">This slide provides details about electric heating.</p>
+          </article>
+          <article class="mt-gslide" data-group="C" data-index="28">
+            <div class="mt-guideTag">Guide Group C • Heat Pump</div>
+            <h3 class="mt-guideTitle">Heat Pump</h3>
+            <p class="mt-guideText">This slide provides details about heat pumps.</p>
+          </article>
+          <article class="mt-gslide" data-group="C" data-index="29">
+            <div class="mt-guideTag">Guide Group C • Not Sure</div>
+            <h3 class="mt-guideTitle">Not Sure About Heating</h3>
+            <p class="mt-guideText">This slide provides details for those not sure about their heating type.</p>
+          </article>
+          <article class="mt-gslide" data-group="D" data-index="30">
+            <div class="mt-guideTag">Guide Group D • Well Pump</div>
+            <h3 class="mt-guideTitle">Well Pump</h3>
+            <p class="mt-guideText">This slide provides details about well pumps.</p>
+          </article>
+          <article class="mt-gslide" data-group="D" data-index="31">
+            <div class="mt-guideTag">Guide Group D • Pool</div>
+            <h3 class="mt-guideTitle">Pool</h3>
+            <p class="mt-guideText">This slide provides details about pools.</p>
+          </article>
+          <article class="mt-gslide" data-group="D" data-index="32">
+            <div class="mt-guideTag">Guide Group D • Hot Tub</div>
+            <h3 class="mt-guideTitle">Hot Tub</h3>
+            <p class="mt-guideText">This slide provides details about hot tubs.</p>
+          </article>
+          <article class="mt-gslide" data-group="D" data-index="33">
+            <div class="mt-guideTag">Guide Group D • EV Charger</div>
+            <h3 class="mt-guideTitle">EV Charger</h3>
+            <p class="mt-guideText">This slide provides details about EV chargers.</p>
+          </article>
+          <article class="mt-gslide" data-group="D" data-index="34">
+            <div class="mt-guideTag">Guide Group D • Workshop / Large Tools</div>
+            <h3 class="mt-guideTitle">Workshop / Large Tools</h3>
+            <p class="mt-guideText">This slide provides details about workshops and large tools.</p>
+          </article>
+          <article class="mt-gslide" data-group="E" data-index="35">
+            <div class="mt-guideTag">Guide Group E • Natural Gas Fuel</div>
+            <h3 class="mt-guideTitle">Natural Gas Fuel</h3>
+            <p class="mt-guideText">This slide provides details about using natural gas as the fuel source.</p>
+          </article>
+          <article class="mt-gslide" data-group="E" data-index="36">
+            <div class="mt-guideTag">Guide Group E • Propane Tank Fuel</div>
+            <h3 class="mt-guideTitle">Propane Tank Fuel</h3>
+            <p class="mt-guideText">This slide provides details about using propane tanks as the fuel source.</p>
+          </article>
+          <article class="mt-gslide" data-group="E" data-index="37">
+            <div class="mt-guideTag">Guide Group E • Not Sure Fuel</div>
+            <h3 class="mt-guideTitle">Not Sure About Fuel</h3>
+            <p class="mt-guideText">This slide provides details for those not sure about their fuel type.</p>
+          </article>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // All logic is wrapped in a boot function to ensure the widget initializes
+    // only after the root exists in the document. This prevents conflicts
+    // when embedded in dynamic environments like WordPress where the root may
+    // be injected after page load.
+    function mtGeneratorBoot(){
+      const root = document.getElementById('mtGeneratorRoot');
+      if(!root){
+        // If the root isn't yet present, retry shortly. After a few retries
+        // we abort to avoid infinite loops in misconfigured embeds.
+        if(window.mtGeneratorRetries === undefined) window.mtGeneratorRetries = 0;
+        if(window.mtGeneratorRetries++ < 20){
+          setTimeout(mtGeneratorBoot, 100);
+        }
+        return;
+      }
+      // Prevent double booting
+      if(root.dataset.mtBooted) return;
+      root.dataset.mtBooted = 'true';
+
+      const state = {
+      backupTier: "",
+      homeSize: "",
+      hasAC: "",
+      heatingType: "",
+      hasWellPump: false,
+      hasPool: false,
+      hasHotTub: false,
+      hasEV: false,
+      hasWorkshop: false,
+      fuelType: "",
+      recommendedKW: "",
+      priceRange: ""
+    };
+
+    // Track the most recently selected high‑power extra so the guide always
+    // navigates to the corresponding slide. When toggling on an extra,
+    // this variable is updated. When toggling off, it will be re‑evaluated
+    // based on any remaining active extras.
+    let lastExtraSelected = null;
+
+      const estimatorSlides = [...root.querySelectorAll('.mt-slide')];
+      const guideSlides = [...root.querySelectorAll('.mt-gslide')];
+      const prevBtns = [...root.querySelectorAll('.prevBtn')];
+      const estimatorProgress = root.querySelector('#mtEstimatorProgress');
+      const guideProgress = root.querySelector('#mtGuideProgress');
+      const estimatorStepLabel = root.querySelector('#mtEstimatorStepLabel');
+      const estimatorStepName = root.querySelector('#mtEstimatorStepName');
+      const guideGroupLabel = root.querySelector('#mtGuideGroupLabel');
+      const guideSlideLabel = root.querySelector('#mtGuideSlideLabel');
+      const guideDotsWrap = root.querySelector('#guideDots');
+      const guideCount = root.querySelector('#guideCount');
+      const guidePrev = root.querySelector('#guidePrev');
+      const guideNext = root.querySelector('#guideNext');
+      const selectedExtras = root.querySelector('#selectedExtras');
+      const acFollowup = root.querySelector('#acFollowup');
+
+    const stepMeta = [
+      { name: 'Backup Goal', groupStart: 0 },
+      { name: 'Home Size', groupStart: 3 },
+      { name: 'Heating Type', groupStart: 6 },
+      { name: 'High-Power Items', groupStart: 9 },
+      { name: 'Fuel Type', groupStart: 12 },
+      { name: 'Result', groupStart: 15 }
+    ];
+
+    let currentStep = 0;
+    let currentGuideIndex = 0;
+
+    function makeDots(){
+      guideDotsWrap.innerHTML = '';
+      guideSlides.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'mt-guideDot' + (i === currentGuideIndex ? ' is-active' : '');
+        guideDotsWrap.appendChild(dot);
+      });
+    }
+
+    function updateEstimatorMeta(){
+      estimatorStepLabel.textContent = `Step ${currentStep + 1} of 6`;
+      estimatorStepName.textContent = stepMeta[currentStep].name;
+      estimatorProgress.style.width = `${((currentStep + 1) / 6) * 100}%`;
+    }
+
+    function showEstimatorStep(index){
+      currentStep = Math.max(0, Math.min(index, estimatorSlides.length - 1));
+      estimatorSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === currentStep));
+      updateEstimatorMeta();
+      goToGuide(stepMeta[currentStep].groupStart);
+      if(currentStep === 5){
+        computeResult();
+        updateResultUI();
+      }
+    }
+
+    function goToGuide(index){
+      currentGuideIndex = Math.max(0, Math.min(index, guideSlides.length - 1));
+      guideSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === currentGuideIndex));
+      const current = guideSlides[currentGuideIndex];
+      const group = current.dataset.group;
+      guideGroupLabel.textContent = `Group ${group}`;
+      guideSlideLabel.textContent = `Slide ${currentGuideIndex + 1} of ${guideSlides.length}`;
+      guideCount.textContent = `${currentGuideIndex + 1} / ${guideSlides.length}`;
+      guideProgress.style.width = `${((currentGuideIndex + 1) / guideSlides.length) * 100}%`;
+      [...guideDotsWrap.children].forEach((dot, i) => dot.classList.toggle('is-active', i === currentGuideIndex));
+      guidePrev.disabled = currentGuideIndex === 0;
+      guideNext.disabled = currentGuideIndex === guideSlides.length - 1;
+    }
+
+    function jumpGuideForSelection(key, value){
+      // Map estimator answers to their corresponding guide slide indices.
+      // Each key can map to either a specific slide index or an object of option-to-index mappings.
+      const map = {
+        backupTier: {
+          'Essentials Only': 18,
+          'Comfort Living': 19,
+          'Whole Home Backup': 20,
+          'Large Property / Extras': 21
+        },
+        homeSize: {
+          'Under 1,500 sq ft': 22,
+          '1,500–2,500 sq ft': 23,
+          '2,500–3,500 sq ft': 24,
+          '3,500+ sq ft': 25
+        },
+        heatingType: {
+          'Natural Gas': 26,
+          'Electric Heat': 27,
+          'Heat Pump': 28,
+          'Not Sure': 29
+        },
+        // Extras map directly to individual slides; only jump when true.
+        hasEV: 33,
+        hasPool: 31,
+        hasWellPump: 30,
+        hasHotTub: 32,
+        hasWorkshop: 34,
+        fuelType: {
+          'Natural Gas': 35,
+          'Propane Tank': 36,
+          'Not Sure': 37
+        }
+      };
+
+      // Special handling for AC follow‑up – show the AC impact slide when "Yes", otherwise go back to the home size intro.
+      if(key === 'hasAC'){
+        goToGuide(value === 'Yes' ? 5 : 3);
+        return;
+      }
+
+      const target = map[key];
+      if(target !== undefined){
+        if(typeof target === 'object'){
+          const idx = target[value];
+          if(idx !== undefined){
+            goToGuide(idx);
+          }
+        } else {
+          // For extras, ignore false values and only jump when the toggle is true.
+          if(value){
+            goToGuide(target);
+          }
+        }
+      }
+    }
+
+    function setSingleChoice(key, value, container){
+      state[key] = value;
+      container.querySelectorAll(`[data-key="${key}"]`).forEach(btn => {
+        btn.classList.toggle('is-selected', btn.dataset.value === value);
+      });
+      refreshHighlights();
+      updateResultUI();
+      jumpGuideForSelection(key, value);
+      validateSteps();
+    }
+
+    function setBinaryChoice(key, value){
+      state[key] = value;
+      root.querySelectorAll(`.mt-pill[data-key="${key}"]`).forEach(btn => btn.classList.toggle('is-selected', btn.dataset.value === value));
+      refreshHighlights();
+      updateResultUI();
+      jumpGuideForSelection(key, value);
+      validateSteps();
+    }
+
+    function toggleExtra(key, button){
+      // Toggle this extra on or off and update UI elements
+      state[key] = !state[key];
+      button.classList.toggle('is-selected', state[key]);
+      renderExtras();
+      refreshHighlights();
+      updateResultUI();
+
+      // When toggling on an extra, record it as the most recently selected
+      // and immediately jump to its guide slide. This ensures that whichever
+      // option the user just activated is reflected in the guide regardless
+      // of other active extras.
+      if(state[key]){
+        lastExtraSelected = key;
+      } else {
+        // If toggling off the current last selection, determine the next
+        // most recent extra still selected. We search through all extras in
+        // the order they appear in the state object. If none remain, set
+        // lastExtraSelected to null to indicate no extras are active.
+        if(lastExtraSelected === key){
+          const allExtras = ['hasEV','hasPool','hasWellPump','hasHotTub','hasWorkshop'];
+          lastExtraSelected = allExtras.find(ex => state[ex]) || null;
+        }
+      }
+      // Navigate to the slide for the last active extra, or the default high‑power
+      // introduction slide when no extras are selected.
+      if(lastExtraSelected){
+        jumpGuideForSelection(lastExtraSelected, true);
+      } else {
+        goToGuide(stepMeta[3].groupStart);
+      }
+    }
+
+    function renderExtras(){
+      const labels = {
+        hasWellPump: 'Well Pump',
+        hasPool: 'Pool',
+        hasHotTub: 'Hot Tub',
+        hasEV: 'EV Charger',
+        hasWorkshop: 'Workshop / Large Tools'
+      };
+      const active = Object.entries(labels).filter(([key]) => state[key]).map(([,label]) => label);
+      selectedExtras.innerHTML = active.length
+        ? active.map(label => `<span class="mt-chip">${label}</span>`).join('')
+        : '<span style="font-size:13px;color:#666;font-weight:700;">No extras selected yet. This step is optional.</span>';
+    }
+
+    function validateSteps(){
+      root.querySelector('#next0').disabled = !state.backupTier;
+      root.querySelector('#next1').disabled = !(state.homeSize && state.hasAC);
+      root.querySelector('#next2').disabled = !state.heatingType;
+      root.querySelector('#next4').disabled = !state.fuelType;
+    }
+
+    function computeResult(){
+      let score = 0;
+      const backupMap = {
+        'Essentials Only': 0,
+        'Comfort Living': 1,
+        'Whole Home Backup': 2,
+        'Large Property / Extras': 3
+      };
+      const homeMap = {
+        'Under 1,500 sq ft': 0,
+        '1,500–2,500 sq ft': 1,
+        '2,500–3,500 sq ft': 2,
+        '3,500+ sq ft': 3
+      };
+      const heatMap = {
+        'Natural Gas': 0,
+        'Heat Pump': 1,
+        'Electric Heat': 2,
+        'Not Sure': 1
+      };
+
+      score += backupMap[state.backupTier] || 0;
+      score += homeMap[state.homeSize] || 0;
+      score += heatMap[state.heatingType] || 0;
+      if(state.hasAC === 'Yes') score += 1;
+      if(state.hasWellPump) score += 1;
+      if(state.hasPool) score += 1;
+      if(state.hasHotTub) score += 1;
+      if(state.hasEV) score += 2;
+      if(state.hasWorkshop) score += 1;
+      if(state.fuelType === 'Propane Tank') score += 1;
+      if(state.fuelType === 'Not Sure') score += 1;
+
+      let kw = '12–14kW Standby Generator';
+      let price = '$8,500 – $12,000 Installed';
+      let gen = 'Compact standby system';
+      if(score >= 3 && score <= 4){
+        kw = '16–18kW Standby Generator';
+        price = '$9,500 – $13,500 Installed';
+        gen = 'Mid-size standby system';
+      }
+      if(score >= 5 && score <= 6){
+        kw = '20–22kW Standby Generator';
+        price = '$11,000 – $16,000 Installed';
+        gen = 'Whole-home leaning system';
+      }
+      if(score >= 7 && score <= 8){
+        kw = '22–24kW Standby Generator';
+        price = '$12,500 – $18,500 Installed';
+        gen = 'Stronger whole-home system';
+      }
+      if(score >= 9){
+        kw = '26kW+ Standby Generator';
+        price = '$15,000 – $24,000+ Installed';
+        gen = 'Large-property / extra-load system';
+      }
+      state.recommendedKW = kw;
+      state.priceRange = price;
+      root.querySelector('#incGen').textContent = gen;
+    }
+
+    function updateResultUI(){
+      root.querySelector('#resultKW').textContent = state.recommendedKW || '22–24kW Standby Generator';
+      root.querySelector('#resultPrice').textContent = state.priceRange || '$11,000 – $17,000 Installed';
+      root.querySelector('#sumBackup').textContent = state.backupTier || '—';
+      root.querySelector('#sumHome').textContent = state.homeSize || '—';
+      root.querySelector('#sumAC').textContent = state.hasAC || '—';
+      root.querySelector('#sumHeat').textContent = state.heatingType || '—';
+      const extras = [];
+      if(state.hasWellPump) extras.push('Well Pump');
+      if(state.hasPool) extras.push('Pool');
+      if(state.hasHotTub) extras.push('Hot Tub');
+      if(state.hasEV) extras.push('EV Charger');
+      if(state.hasWorkshop) extras.push('Workshop / Large Tools');
+      const extraText = extras.length ? extras.join(', ') : 'None selected';
+      root.querySelector('#sumExtras').textContent = extraText;
+      root.querySelector('#sumFuel').textContent = state.fuelType || '—';
+      root.querySelector('#gtBackup').textContent = state.backupTier || '—';
+      root.querySelector('#gtHome').textContent = state.homeSize || '—';
+      root.querySelector('#gtAC').textContent = state.hasAC || '—';
+      root.querySelector('#gtHeat').textContent = state.heatingType || '—';
+      root.querySelector('#gtExtras').textContent = extraText;
+      root.querySelector('#gtFuel').textContent = state.fuelType || '—';
+      const acImpactMeter = root.querySelector('#acImpactMeter');
+      const acImpactLabel = root.querySelector('#acImpactLabel');
+      if(state.hasAC === 'Yes'){
+        acImpactMeter.style.width = '86%';
+        acImpactLabel.textContent = 'High';
+      } else if(state.hasAC === 'No'){
+        acImpactMeter.style.width = '28%';
+        acImpactLabel.textContent = 'Lower';
+      } else {
+        acImpactMeter.style.width = '46%';
+        acImpactLabel.textContent = 'Moderate';
+      }
+    }
+
+    function clearHighlights(selector){
+      root.querySelectorAll(selector).forEach(el => el.classList.remove('is-highlight'));
+    }
+
+    function refreshHighlights(){
+      clearHighlights('#guideTierList li, #guideSizeBands .mt-band, #guideHomeScale .mt-house, #guideHeatingList li, #guideFuelList li, #guideExtrasGeneral li, #guideExtrasPool li');
+      if(state.backupTier){
+        root.querySelectorAll(`#guideTierList li[data-match="${cssEscape(state.backupTier)}"]`).forEach(el => el.classList.add('is-highlight'));
+      }
+      const bandMap = {
+        'Essentials Only':'band1',
+        'Comfort Living':'band2',
+        'Whole Home Backup':'band3',
+        'Large Property / Extras':'band4'
+      };
+      if(bandMap[state.backupTier]){
+        const band = root.querySelector(`#guideSizeBands .mt-band[data-band="${bandMap[state.backupTier]}"]`);
+        if(band) band.classList.add('is-highlight');
+      }
+      if(state.homeSize){
+        root.querySelectorAll(`#guideHomeScale .mt-house[data-match="${cssEscape(state.homeSize)}"]`).forEach(el => el.classList.add('is-highlight'));
+      }
+      if(state.heatingType){
+        root.querySelectorAll(`#guideHeatingList li[data-match="${cssEscape(state.heatingType)}"]`).forEach(el => el.classList.add('is-highlight'));
+      }
+      if(state.fuelType){
+        root.querySelectorAll(`#guideFuelList li[data-match="${cssEscape(state.fuelType)}"]`).forEach(el => el.classList.add('is-highlight'));
+      }
+      ['hasWellPump','hasHotTub','hasWorkshop'].forEach(key => {
+        if(state[key]) root.querySelectorAll(`#guideExtrasGeneral li[data-match-extra="${key}"]`).forEach(el => el.classList.add('is-highlight'));
+      });
+      ['hasPool','hasWellPump'].forEach(key => {
+        if(state[key]) root.querySelectorAll(`#guideExtrasPool li[data-match-extra="${key}"]`).forEach(el => el.classList.add('is-highlight'));
+      });
+    }
+
+    function cssEscape(value){
+      if(window.CSS && CSS.escape) return CSS.escape(value);
+      return String(value).replace(/"/g, '\\"');
+    }
+
+      root.querySelectorAll('[data-key="backupTier"]').forEach(btn => {
+        btn.addEventListener('click', () => setSingleChoice('backupTier', btn.dataset.value, root.querySelector('#backupTierGrid')));
+      });
+
+      root.querySelectorAll('[data-key="homeSize"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setSingleChoice('homeSize', btn.dataset.value, root.querySelector('#homeSizeGrid'));
+          acFollowup.style.display = 'block';
+        });
+      });
+
+      root.querySelectorAll('.mt-pill[data-key="hasAC"]').forEach(btn => {
+        btn.addEventListener('click', () => setBinaryChoice('hasAC', btn.dataset.value));
+      });
+
+      root.querySelectorAll('[data-key="heatingType"]').forEach(btn => {
+        btn.addEventListener('click', () => setSingleChoice('heatingType', btn.dataset.value, root.querySelector('#heatingTypeGrid')));
+      });
+
+      root.querySelectorAll('#extrasGrid [data-toggle-key]').forEach(btn => {
+        btn.addEventListener('click', () => toggleExtra(btn.dataset.toggleKey, btn));
+      });
+
+      root.querySelectorAll('[data-key="fuelType"]').forEach(btn => {
+        btn.addEventListener('click', () => setSingleChoice('fuelType', btn.dataset.value, root.querySelector('#fuelTypeGrid')));
+      });
+
+      root.querySelector('#next0').addEventListener('click', () => showEstimatorStep(1));
+      root.querySelector('#next1').addEventListener('click', () => showEstimatorStep(2));
+      root.querySelector('#next2').addEventListener('click', () => showEstimatorStep(3));
+      root.querySelector('#next3').addEventListener('click', () => showEstimatorStep(4));
+      root.querySelector('#next4').addEventListener('click', () => showEstimatorStep(5));
+
+      prevBtns.forEach(btn => btn.addEventListener('click', () => showEstimatorStep(currentStep - 1)));
+      root.querySelector('#restartBtn').addEventListener('click', () => window.location.reload());
+
+      guidePrev.addEventListener('click', () => goToGuide(currentGuideIndex - 1));
+      guideNext.addEventListener('click', () => goToGuide(currentGuideIndex + 1));
+
+      renderExtras();
+      makeDots();
+      updateEstimatorMeta();
+      goToGuide(0);
+      updateResultUI();
+      validateSteps();
+    } // end mtGeneratorBoot
+
+    // Kick off the boot process. If the document hasn't finished loading,
+    // wait for DOMContentLoaded to ensure the root can be found.
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', mtGeneratorBoot);
+    } else {
+      mtGeneratorBoot();
+    }
+  </script>
+  </div><!-- end of #mtGeneratorRoot -->
+</body>
+</html>
