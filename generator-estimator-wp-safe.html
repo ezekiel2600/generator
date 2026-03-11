@@ -1016,6 +1016,14 @@
                 <div class="mt-choiceBody"><strong>Large Property / Extras</strong><span>For homes with bigger demands like pools, EV charging, hot tubs, or other high-power needs.</span></div>
               </button>
             </div>
+            <div id="acFollowup" style="margin-top:18px; margin-bottom:18px;">
+              <div class="mt-multiHeader">Cooling Follow-Up</div>
+              <h4 style="font-size:18px; margin-bottom:10px;">Do You Want Your Air Conditioning Running During An Outage?</h4>
+              <div class="mt-binary" role="group" aria-label="Air conditioning outage preference">
+                <button class="mt-pill" type="button" data-key="hasAC" data-value="Yes">Yes</button>
+                <button class="mt-pill" type="button" data-key="hasAC" data-value="No">No</button>
+              </div>
+            </div>
             <div class="mt-actions">
               <button class="mt-btnGhost" type="button" disabled>Back</button>
               <button class="mt-btn" type="button" id="next0" disabled>Continue</button>
@@ -1032,14 +1040,6 @@
               <button class="mt-choice" data-key="homeSize" data-value="3,500+ sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M2 12l10-8 10 8"></path><path d="M4 11v9h16v-9"></path><path d="M6 14h12"></path><path d="M7 12V8h10v4"></path></svg></div><div class="mt-choiceBody"><strong>3,500+ sq ft</strong><span>Often requires a larger standby range.</span></div></button>
             </div>
 
-            <div id="acFollowup" style="display:none; margin-top:18px;">
-              <div class="mt-multiHeader">Cooling Follow-Up</div>
-              <h4 style="font-size:18px; margin-bottom:10px;">Do You Want Your Air Conditioning Running During An Outage?</h4>
-              <div class="mt-binary">
-                <button class="mt-pill" type="button" data-key="hasAC" data-value="Yes">Yes</button>
-                <button class="mt-pill" type="button" data-key="hasAC" data-value="No">No</button>
-              </div>
-            </div>
             <div class="mt-actions">
               <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn" type="button" id="next1" disabled>Continue</button>
@@ -1652,7 +1652,6 @@
       const guidePrev = root.querySelector('#guidePrev');
       const guideNext = root.querySelector('#guideNext');
       const selectedExtras = root.querySelector('#selectedExtras');
-      const acFollowup = root.querySelector('#acFollowup');
 
     const stepMeta = [
       { name: 'Backup Goal', groupStart: 0 },
@@ -1831,8 +1830,8 @@
     }
 
     function validateSteps(){
-      root.querySelector('#next0').disabled = !state.backupTier;
-      root.querySelector('#next1').disabled = !(state.homeSize && state.hasAC);
+      root.querySelector('#next0').disabled = !(state.backupTier && state.hasAC);
+      root.querySelector('#next1').disabled = !state.homeSize;
       root.querySelector('#next2').disabled = !state.heatingType;
       root.querySelector('#next4').disabled = !state.fuelType;
     }
@@ -1982,7 +1981,6 @@
       root.querySelectorAll('[data-key="homeSize"]').forEach(btn => {
         btn.addEventListener('click', () => {
           setSingleChoice('homeSize', btn.dataset.value, root.querySelector('#homeSizeGrid'));
-          acFollowup.style.display = 'block';
         });
       });
 
