@@ -157,8 +157,10 @@
       display:flex;
       flex-direction:column;
       flex:1 1 auto;
+      overflow:hidden;
+      transition:height .3s ease;
     }
-    .mt-slide{display:none; flex:1 1 auto; flex-direction:column; min-height:0;}
+    .mt-slide{display:none; flex-direction:column; min-height:0;}
     .mt-slide.is-active{display:flex;}
     .mt-slide h3{
       font-size:30px;
@@ -284,11 +286,10 @@
     }
 
     .mt-actions{
-      margin-top:auto;
+      margin-top:18px;
       display:flex;
       align-items:center;
       gap:10px;
-      padding-top:18px;
     }
     .mt-btn,
     .mt-btnGhost{
@@ -1710,14 +1711,23 @@
       estimatorProgress.style.width = `${((currentStep + 1) / 6) * 100}%`;
     }
 
+    function syncEstimatorHeight(){
+      const activeSlide = estimatorSlides[currentStep];
+      const estMain = root.querySelector('.mt-est-main');
+      if(!activeSlide || !estMain) return;
+      estMain.style.height = `${activeSlide.scrollHeight}px`;
+    }
+
     function showEstimatorStep(index){
       currentStep = Math.max(0, Math.min(index, estimatorSlides.length - 1));
       estimatorSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === currentStep));
+      syncEstimatorHeight();
       updateEstimatorMeta();
       goToGuide(stepMeta[currentStep].groupStart);
       if(currentStep === 5){
         computeResult();
         updateResultUI();
+        syncEstimatorHeight();
       }
     }
 
@@ -2049,6 +2059,8 @@
       goToGuide(0);
       updateResultUI();
       validateSteps();
+      syncEstimatorHeight();
+      window.addEventListener('resize', syncEstimatorHeight);
     } // end mtGeneratorBoot
 
     // Kick off the boot process. If the document hasn't finished loading,
