@@ -787,20 +787,24 @@
       background: #fff;
     }
     .mt-est-headBrand {
-      display: flex;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
       align-items: center;
-      justify-content: center;
-      gap: 10px;
+      column-gap: 10px;
+      width: 100%;
     }
     .mt-est-head img {
       width: 48px;
       height: 48px;
+      justify-self: start;
     }
     .mt-est-head span {
       font-size: 33px;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--mt-black);
+      text-align: center;
+      justify-self: center;
     }
  /* ---------- WORDPRESS FIXES (HEADINGS + BUTTON + SPACING) ---------- */
 
