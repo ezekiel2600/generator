@@ -1051,7 +1051,6 @@
         <div class="mt-est-main">
           <div class="mt-slide is-active" data-step="0">
             <h3>What Do You Want Powered During An Outage?</h3>
-            <p class="mt-sub">Choose the level of backup power that matches how you want your home to function when the grid goes down.</p>
             <!-- Use a two‑column layout on desktop for backup tier choices -->
             <div class="mt-grid mt-grid-2" id="backupTierGrid">
               <button class="mt-choice" data-key="backupTier" data-value="Essentials Only" type="button">
@@ -1094,7 +1093,6 @@
 
           <div class="mt-slide" data-step="1">
             <h3>How Big Is Your Home?</h3>
-            <p class="mt-sub">Home size helps estimate overall electrical demand, especially when larger systems and cooling are involved.</p>
             <div class="mt-grid mt-grid-2" id="homeSizeGrid">
               <button class="mt-choice" data-key="homeSize" data-value="Under 1,500 sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6"></path><path d="M6 10v8h12v-8"></path><path d="M9 18v-5h6v5"></path></svg></div><div class="mt-choiceBody"><strong>Under 1,500 sq ft</strong><span>Often lower base demand with fewer major loads.</span></div></button>
               <button class="mt-choice" data-key="homeSize" data-value="1,500–2,500 sq ft" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"></path><path d="M5 10v9h14v-9"></path><path d="M8 19v-6h3v6"></path><path d="M13 13h3v3h-3z"></path></svg></div><div class="mt-choiceBody"><strong>1,500–2,500 sq ft</strong><span>Balanced mid-range demand for many homes.</span></div></button>
@@ -1110,7 +1108,6 @@
 
           <div class="mt-slide" data-step="2">
             <h3>How Is Your Home Heated?</h3>
-            <p class="mt-sub">Heating type can make a big difference in generator size, especially when electric heat is involved.</p>
             <div class="mt-grid mt-grid-2" id="heatingTypeGrid">
               <button class="mt-choice" data-key="heatingType" data-value="Natural Gas" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5.5 5 9a5 5 0 1 1-10 0c0-3.5 3-6 5-9z"></path></svg></div><div class="mt-choiceBody"><strong>Natural Gas</strong><span>Lower electrical demand compared to full electric heating.</span></div></button>
               <button class="mt-choice" data-key="heatingType" data-value="Electric Heat" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M13 2L6 13h5l-1 9 7-11h-5z"></path></svg></div><div class="mt-choiceBody"><strong>Electric Heat</strong><span>Usually requires more generator capacity.</span></div></button>
@@ -1125,7 +1122,6 @@
 
           <div class="mt-slide" data-step="3">
             <h3>Do You Have Any Of These High-Power Items?</h3>
-            <p class="mt-sub">Select any that apply. These can increase the generator size needed for reliable backup power.</p>
             <div class="mt-grid mt-grid-2" id="extrasGrid">
               <button class="mt-choice" type="button" data-toggle-key="hasWellPump"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 2v7"></path><path d="M7 10h10"></path><path d="M9 10v8"></path><path d="M15 10v8"></path><path d="M6 18h12"></path></svg></div><div class="mt-choiceBody"><strong>Well Pump</strong><span>Water supply equipment can add meaningful demand.</span></div></button>
               <button class="mt-choice" type="button" data-toggle-key="hasPool"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M4 16c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"></path><path d="M4 20c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"></path><path d="M6 4h12"></path><path d="M8 4v8"></path><path d="M16 4v8"></path></svg></div><div class="mt-choiceBody"><strong>Pool</strong><span>Pumps and related equipment can push the estimate higher.</span></div></button>
@@ -1142,7 +1138,6 @@
 
           <div class="mt-slide" data-step="4">
             <h3>What Fuel Source Do You Have Available?</h3>
-            <p class="mt-sub">Fuel availability helps determine which standby generator setup makes the most sense for your home.</p>
             <div class="mt-grid" id="fuelTypeGrid">
               <button class="mt-choice" data-key="fuelType" data-value="Natural Gas" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5.5 5 9a5 5 0 1 1-10 0c0-3.5 3-6 5-9z"></path><path d="M9 13c1 .8 2 1.2 3 1.2s2-.4 3-1.2"></path></svg></div><div class="mt-choiceBody"><strong>Natural Gas</strong><span>Often the easiest standby option when utility gas is already available.</span></div></button>
               <button class="mt-choice" data-key="fuelType" data-value="Propane Tank" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="3"></rect><path d="M10 5V3h4v2"></path><path d="M8 12h8"></path></svg></div><div class="mt-choiceBody"><strong>Propane Tank</strong><span>A strong option for homes without natural gas service.</span></div></button>
