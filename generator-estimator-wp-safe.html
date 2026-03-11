@@ -1712,7 +1712,9 @@
       const activeSlide = estimatorSlides[currentStep];
       const estMain = root.querySelector('.mt-est-main');
       if(!activeSlide || !estMain) return;
-      estMain.style.height = `${activeSlide.scrollHeight}px`;
+      // Add a small safety buffer so bottom CTA text/buttons are not clipped
+      // when rounding/layout differences occur across browsers.
+      estMain.style.height = `${activeSlide.scrollHeight + 12}px`;
     }
 
     function showEstimatorStep(index){
