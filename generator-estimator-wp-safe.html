@@ -413,8 +413,9 @@
     .mt-guide .mt-topbar{
       background:linear-gradient(180deg,#151515,#111);
       color:#fff;
-      border-bottom:1px solid rgba(255,255,255,.1);
+      border-bottom:0;
     }
+    .mt-guide.mt-card{border-color:transparent;}
     .mt-guide .mt-topbar h2{color:#fff}
     .mt-guide .mt-stepmeta{color:rgba(255,255,255,.78)}
     .mt-guide .mt-progress{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.08)}
@@ -835,9 +836,13 @@
         color: #ffffff;
       }
 
+      #mtGeneratorRoot .mt-estimator.mt-card {
+        border-color: transparent;
+      }
+
       #mtGeneratorRoot .mt-est-head {
         background: rgba(0,0,0,.28);
-        border-bottom: 1px solid rgba(255,255,255,.12);
+        border-bottom: 0;
       }
       #mtGeneratorRoot .mt-est-head .mt-resetBtn {
         width: 48px;
@@ -879,7 +884,7 @@
         column-gap: 12px;
         row-gap: 10px;
         background: rgba(0,0,0,.24);
-        border-bottom: 1px solid rgba(255,255,255,.12);
+        border-bottom: 0;
       }
       #mtGeneratorRoot .mt-estimator .mt-topbar h2 {
         margin-bottom: 0 !important;
