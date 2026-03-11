@@ -846,8 +846,22 @@
       }
 
       #mtGeneratorRoot .mt-estimator .mt-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 10px;
         background: rgba(0,0,0,.24);
         border-bottom: 1px solid rgba(255,255,255,.12);
+      }
+      #mtGeneratorRoot .mt-estimator .mt-topbar h2 {
+        margin-bottom: 0 !important;
+      }
+      #mtGeneratorRoot .mt-estimator .mt-progress {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+        margin-top: 0;
       }
       #mtGeneratorRoot .mt-estimator .mt-progress {
         height: 14px;
@@ -976,13 +990,11 @@
           <span>Generator Estimator</span>
         </div>
         <div class="mt-topbar">
-          <div>
-            <h2 id="mtEstimatorStepName">Backup Goal</h2>
-            <div class="mt-progress" aria-hidden="true"><span id="mtEstimatorProgress"></span></div>
-          </div>
+          <h2 id="mtEstimatorStepName">Backup Goal</h2>
           <div class="mt-stepmeta">
             <div id="mtEstimatorStepLabel">Step 1 of 6</div>
           </div>
+          <div class="mt-progress" aria-hidden="true"><span id="mtEstimatorProgress"></span></div>
         </div>
 
         <div class="mt-est-main">
