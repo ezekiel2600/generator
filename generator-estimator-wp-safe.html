@@ -772,6 +772,38 @@
       letter-spacing: -0.02em;
       color: var(--mt-black);
     }
+ /* ---------- WORDPRESS FIXES (HEADINGS + BUTTON + SPACING) ---------- */
+
+      /* Restore spacing for headings */
+      #mtGeneratorRoot h1,
+      #mtGeneratorRoot h2,
+      #mtGeneratorRoot h3,
+      #mtGeneratorRoot h4 {
+        margin-bottom: 12px !important;
+        line-height: 1.15 !important;
+      }
+
+      /* Restore paragraph spacing */
+      #mtGeneratorRoot p {
+        margin-bottom: 14px !important;
+        line-height: 1.6 !important;
+      }
+
+      /* Guide text spacing */
+      #mtGeneratorRoot .mt-guideText {
+        margin-bottom: 18px !important;
+      }
+
+      /* Continue button bold */
+      #mtGeneratorRoot .mt-btn {
+        font-weight: 900 !important;
+      }
+
+      /* Guide slide titles white */
+      #mtGeneratorRoot .mt-guideTitle,
+      #mtGeneratorRoot .mt-guide h3 {
+        color: #ffffff !important;
+      }
   </style>
 </head>
 <body>
