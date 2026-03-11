@@ -106,7 +106,6 @@
 
     .mt-estimator,
     .mt-guide{
-      min-height:760px;
       display:flex;
       flex-direction:column;
     }
@@ -156,7 +155,7 @@
       padding:18px 20px 20px;
       display:flex;
       flex-direction:column;
-      flex:1 1 auto;
+      flex:0 0 auto;
       overflow:hidden;
       transition:height .3s ease;
     }
@@ -194,7 +193,7 @@
       text-align:left;
       cursor:pointer;
       transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease, background .18s ease;
-      min-height:102px;
+      min-height:0;
     }
     .mt-choice:hover{
       border-color:rgba(193,41,46,.4);
@@ -448,7 +447,6 @@
     }
     .mt-guideViewport{
       position:relative;
-      min-height:640px;
       z-index:1;
     }
     .mt-gslide{display:none; animation:fadeIn .24s ease;}
@@ -705,8 +703,6 @@
 
     @media (max-width: 1080px){
       .mt-shell{grid-template-columns:1fr;}
-      .mt-estimator,.mt-guide{min-height:unset}
-      .mt-guideViewport{min-height:560px}
     }
     @media (max-width: 760px){
       .mt-wrap{padding:18px 12px 28px}
@@ -719,7 +715,6 @@
       .mt-summary{grid-template-columns:1fr}
       .mt-guideStage{padding:16px}
       .mt-guideSplit{grid-template-columns:1fr}
-      .mt-guideViewport{min-height:640px}
       .mt-homeScale{grid-template-columns:repeat(2,1fr)}
       .mt-legend{grid-template-columns:1fr}
       .mt-binary{flex-wrap:wrap}
