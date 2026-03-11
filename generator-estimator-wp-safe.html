@@ -757,11 +757,23 @@
       display: none !important;
     }
 
-    /* Stretch the guide navigation across the header and evenly space controls */
+    /* Stretch the guide navigation across the header and center title between controls */
     .mt-guideNav {
       flex: 1 1 auto;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      column-gap: 12px;
       padding-top: 0;
+    }
+
+    .mt-guideNavTitle {
+      margin: 0;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #111111;
     }
 
     /* Estimator custom header */
@@ -1126,6 +1138,7 @@
           <!-- Navigation controls moved from footer to header -->
           <div class="mt-guideNav">
             <button class="mt-navBtn" type="button" id="guidePrev" aria-label="Previous guide slide">‹</button>
+            <h2 class="mt-guideNavTitle">Generator Guide</h2>
             <div class="mt-guideDots" id="guideDots"></div>
             <div class="mt-gcount" id="guideCount">1 / 18</div>
             <button class="mt-navBtn" type="button" id="guideNext" aria-label="Next guide slide">›</button>
