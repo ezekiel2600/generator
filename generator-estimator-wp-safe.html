@@ -124,6 +124,12 @@
       backdrop-filter:blur(8px);
       z-index:10;
     }
+    .mt-topbarRight{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+    }
     .mt-topbar h2{
       font-size:24px;
       letter-spacing:-.02em;
@@ -150,6 +156,30 @@
       width:0;
       background:linear-gradient(90deg,var(--mt-yellow), var(--mt-red));
       transition:width .24s ease;
+    }
+    .mt-resetIconBtn{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.25);
+      background:#171717;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      box-shadow:0 8px 20px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .mt-resetIconBtn:hover{
+      transform:translateY(-1px);
+      border-color:rgba(255,255,255,.42);
+      box-shadow:0 12px 24px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.14);
+    }
+    .mt-resetIconBtn img{
+      width:22px;
+      height:22px;
+      object-fit:contain;
+      filter:brightness(0) invert(1);
+      opacity:.5;
     }
 
     .mt-est-main{
@@ -980,8 +1010,13 @@
             <h2 id="mtEstimatorStepName">Backup Goal</h2>
             <div class="mt-progress" aria-hidden="true"><span id="mtEstimatorProgress"></span></div>
           </div>
-          <div class="mt-stepmeta">
-            <div id="mtEstimatorStepLabel">Step 1 of 6</div>
+          <div class="mt-topbarRight">
+            <button class="mt-resetIconBtn" type="button" id="mtTopResetBtn" aria-label="Reset estimator">
+              <img src="https://www.mt-electric.net/wp-content/uploads/2026/03/reload-reset.svg" alt="">
+            </button>
+            <div class="mt-stepmeta">
+              <div id="mtEstimatorStepLabel">Step 1 of 6</div>
+            </div>
           </div>
         </div>
 
@@ -2010,6 +2045,7 @@
 
       prevBtns.forEach(btn => btn.addEventListener('click', () => showEstimatorStep(currentStep - 1)));
       root.querySelector('#restartBtn').addEventListener('click', () => window.location.reload());
+      root.querySelector('#mtTopResetBtn').addEventListener('click', () => window.location.reload());
 
       guidePrev.addEventListener('click', () => goToGuide(currentGuideIndex - 1));
       guideNext.addEventListener('click', () => goToGuide(currentGuideIndex + 1));
