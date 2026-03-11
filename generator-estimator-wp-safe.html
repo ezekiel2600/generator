@@ -127,6 +127,32 @@
       font-size:24px;
       letter-spacing:-.02em;
     }
+    .mt-stepHeading{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .mt-stepBack{
+      width:36px;
+      height:36px;
+      border:0;
+      background:transparent;
+      padding:0;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      border-radius:999px;
+      transition:background .16s ease, opacity .16s ease;
+      flex:0 0 auto;
+    }
+    .mt-stepBack:hover{background:rgba(255,255,255,.12);}
+    .mt-stepBack:disabled{opacity:.35;cursor:not-allowed;}
+    .mt-stepBack img{
+      width:20px;
+      height:20px;
+      display:block;
+    }
     .mt-stepmeta{
       text-align:right;
       font-size:13px;
@@ -898,6 +924,9 @@
       #mtGeneratorRoot .mt-estimator .mt-topbar h2 {
         margin-bottom: 0 !important;
       }
+      #mtGeneratorRoot .mt-estimator .mt-stepBack:hover {
+        background: rgba(255,255,255,.16);
+      }
       #mtGeneratorRoot .mt-estimator .mt-slide h3 {
         font-size: 25px;
       }
@@ -1058,7 +1087,12 @@
           </button>
         </div>
         <div class="mt-topbar">
-          <h2 id="mtEstimatorStepName">Backup Goal</h2>
+          <div class="mt-stepHeading">
+            <button class="mt-stepBack" type="button" id="mtEstimatorStepBack" aria-label="Go to previous step">
+              <img src="https://www.mt-electric.net/wp-content/uploads/2026/03/back-arrow.svg" alt="">
+            </button>
+            <h2 id="mtEstimatorStepName">Backup Goal</h2>
+          </div>
           <div class="mt-stepmeta">
             <div id="mtEstimatorStepLabel">Step 1 of 6</div>
           </div>
@@ -1118,7 +1152,6 @@
             </div>
 
             <div class="mt-actions">
-              <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn" type="button" id="next1" disabled>Continue</button>
             </div>
           </div>
@@ -1132,7 +1165,6 @@
               <button class="mt-choice" data-key="heatingType" data-value="Not Sure" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.1-1.7 2.2"></path><circle cx="12" cy="17" r=".7" fill="currentColor" stroke="none"></circle></svg></div><div class="mt-choiceBody"><strong>Not Sure</strong><span>Use a balanced estimate for now and explain the difference in the guide.</span></div></button>
             </div>
             <div class="mt-actions">
-              <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn" type="button" id="next2" disabled>Continue</button>
             </div>
           </div>
@@ -1148,7 +1180,6 @@
             </div>
             <div class="mt-chipRow" id="selectedExtras"></div>
             <div class="mt-actions">
-              <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn" type="button" id="next3">Continue</button>
             </div>
           </div>
@@ -1161,7 +1192,6 @@
               <button class="mt-choice" data-key="fuelType" data-value="Not Sure" type="button"><div class="mt-choiceIcon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.8.7-1.7 1.1-1.7 2.2"></path><circle cx="12" cy="17" r=".7" fill="currentColor" stroke="none"></circle></svg></div><div class="mt-choiceBody"><strong>Not Sure</strong><span>Show a general estimate and explain the differences in the guide.</span></div></button>
             </div>
             <div class="mt-actions">
-              <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn" type="button" id="next4" disabled>See My Estimate</button>
             </div>
           </div>
@@ -1193,7 +1223,6 @@
               <p>Keep this area reserved for the next phase. No form scripts, no CRM posting, and no email handling are built into this version yet.</p>
             </div>
             <div class="mt-actions">
-              <button class="mt-btnGhost prevBtn" type="button">Back</button>
               <button class="mt-btn mt-btnPrimary" type="button" id="restartBtn">Start Over</button>
             </div>
           </div>
@@ -1676,7 +1705,7 @@
 
       const estimatorSlides = [...root.querySelectorAll('.mt-slide')];
       const guideSlides = [...root.querySelectorAll('.mt-gslide')];
-      const prevBtns = [...root.querySelectorAll('.prevBtn')];
+      const estimatorStepBack = root.querySelector('#mtEstimatorStepBack');
       const estimatorProgress = root.querySelector('#mtEstimatorProgress');
       const guideProgress = root.querySelector('#mtGuideProgress');
       const estimatorStepLabel = root.querySelector('#mtEstimatorStepLabel');
@@ -1714,6 +1743,7 @@
       estimatorStepLabel.textContent = `Step ${currentStep + 1} of 6`;
       estimatorStepName.textContent = stepMeta[currentStep].name;
       estimatorProgress.style.width = `${((currentStep + 1) / 6) * 100}%`;
+      estimatorStepBack.disabled = currentStep === 0;
     }
 
     function syncEstimatorHeight(){
@@ -2053,7 +2083,7 @@
       root.querySelector('#next3').addEventListener('click', () => showEstimatorStep(4));
       root.querySelector('#next4').addEventListener('click', () => showEstimatorStep(5));
 
-      prevBtns.forEach(btn => btn.addEventListener('click', () => showEstimatorStep(currentStep - 1)));
+      estimatorStepBack.addEventListener('click', () => showEstimatorStep(currentStep - 1));
       root.querySelector('#restartBtn').addEventListener('click', () => window.location.reload());
       root.querySelector('#estimatorResetBtn').addEventListener('click', () => window.location.reload());
 
