@@ -804,10 +804,127 @@
         font-weight: 900 !important;
       }
 
-      /* Guide slide titles white */
-      #mtGeneratorRoot .mt-guideTitle,
-      #mtGeneratorRoot .mt-guide h3 {
-        color: #ffffff !important;
+      /* -------- Theme swap: estimator dark (left), guide light (right) -------- */
+
+      #mtGeneratorRoot .mt-estimator {
+        background: linear-gradient(160deg, #151515 0%, #0f0f0f 55%, #1f1f1f 100%);
+        color: #ffffff;
+      }
+
+      #mtGeneratorRoot .mt-est-head {
+        background: rgba(0,0,0,.28);
+        border-bottom: 1px solid rgba(255,255,255,.12);
+      }
+      #mtGeneratorRoot .mt-est-head span,
+      #mtGeneratorRoot .mt-estimator .mt-topbar h2,
+      #mtGeneratorRoot .mt-estimator .mt-slide h3,
+      #mtGeneratorRoot .mt-estimator .mt-choiceBody strong,
+      #mtGeneratorRoot .mt-estimator .mt-summaryItem span,
+      #mtGeneratorRoot .mt-estimator .mt-summaryItem b,
+      #mtGeneratorRoot .mt-estimator .mt-includes li,
+      #mtGeneratorRoot .mt-estimator .mt-resultKw,
+      #mtGeneratorRoot .mt-estimator .mt-resultLabel {
+        color: #ffffff;
+      }
+
+      #mtGeneratorRoot .mt-estimator .mt-topbar {
+        background: rgba(0,0,0,.24);
+        border-bottom: 1px solid rgba(255,255,255,.12);
+      }
+      #mtGeneratorRoot .mt-estimator .mt-stepmeta,
+      #mtGeneratorRoot .mt-estimator .mt-sub,
+      #mtGeneratorRoot .mt-estimator .mt-choiceBody span,
+      #mtGeneratorRoot .mt-estimator .mt-placeholder p {
+        color: rgba(255,255,255,.78);
+      }
+
+      #mtGeneratorRoot .mt-estimator .mt-choice,
+      #mtGeneratorRoot .mt-estimator .mt-summaryItem,
+      #mtGeneratorRoot .mt-estimator .mt-includes li,
+      #mtGeneratorRoot .mt-estimator .mt-placeholder {
+        background: rgba(255,255,255,.06);
+        border-color: rgba(255,255,255,.18);
+      }
+      #mtGeneratorRoot .mt-estimator .mt-choice.is-selected {
+        background: linear-gradient(180deg, rgba(193,41,46,.35), rgba(255,202,58,.16));
+      }
+
+      /* Left-side icon treatment: white background and dark icon by default */
+      #mtGeneratorRoot .mt-estimator .mt-choiceIcon {
+        background: #ffffff;
+        color: #181818;
+        border: 1px solid rgba(0,0,0,.08);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+      }
+      #mtGeneratorRoot .mt-estimator .mt-choice.is-selected .mt-choiceIcon {
+        background: #ffffff;
+        color: #181818;
+      }
+
+      #mtGeneratorRoot .mt-guide {
+        background: #ffffff;
+        color: #111111;
+      }
+      #mtGeneratorRoot .mt-guide .mt-topbar {
+        background: rgba(255,255,255,.96);
+        color: #111111;
+        border-bottom: 1px solid rgba(0,0,0,.1);
+      }
+      #mtGeneratorRoot .mt-guide .mt-topbar h2,
+      #mtGeneratorRoot .mt-guide .mt-guideTitle,
+      #mtGeneratorRoot .mt-guide h3,
+      #mtGeneratorRoot .mt-guide .mt-guideTag,
+      #mtGeneratorRoot .mt-guide .mt-guidePanel h4,
+      #mtGeneratorRoot .mt-guide .mt-guideVisual h4,
+      #mtGeneratorRoot .mt-guide .mt-tierList li strong,
+      #mtGeneratorRoot .mt-guide .mt-factList li strong,
+      #mtGeneratorRoot .mt-guide .mt-summaryTokens li strong,
+      #mtGeneratorRoot .mt-guide .mt-installList li strong,
+      #mtGeneratorRoot .mt-guide .mt-band,
+      #mtGeneratorRoot .mt-guide .mt-systemNode strong {
+        color: #111111 !important;
+      }
+      #mtGeneratorRoot .mt-guide .mt-stepmeta,
+      #mtGeneratorRoot .mt-guide .mt-guideText,
+      #mtGeneratorRoot .mt-guide .mt-tierList li span,
+      #mtGeneratorRoot .mt-guide .mt-factList li span,
+      #mtGeneratorRoot .mt-guide .mt-summaryTokens li span,
+      #mtGeneratorRoot .mt-guide .mt-installList li span,
+      #mtGeneratorRoot .mt-guide .mt-band span,
+      #mtGeneratorRoot .mt-guide .mt-house,
+      #mtGeneratorRoot .mt-guide .mt-gcount,
+      #mtGeneratorRoot .mt-guide .mt-systemNode span {
+        color: rgba(0,0,0,.68);
+      }
+      #mtGeneratorRoot .mt-guide .mt-progress {
+        background: #f0f0f0;
+        border-color: rgba(0,0,0,.1);
+      }
+      #mtGeneratorRoot .mt-guide .mt-guideStage {
+        background: linear-gradient(160deg, #ffffff 0%, #f7f7f7 55%, #f2f2f2 100%);
+        color: #111111;
+      }
+      #mtGeneratorRoot .mt-guide .mt-guideTag,
+      #mtGeneratorRoot .mt-guide .mt-guidePanel,
+      #mtGeneratorRoot .mt-guide .mt-guideVisual,
+      #mtGeneratorRoot .mt-guide .mt-tierList li,
+      #mtGeneratorRoot .mt-guide .mt-factList li,
+      #mtGeneratorRoot .mt-guide .mt-summaryTokens li,
+      #mtGeneratorRoot .mt-guide .mt-installList li,
+      #mtGeneratorRoot .mt-guide .mt-band,
+      #mtGeneratorRoot .mt-guide .mt-impactCard,
+      #mtGeneratorRoot .mt-guide .mt-systemNode {
+        background: rgba(255,255,255,.8);
+        border-color: rgba(0,0,0,.1);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+      }
+      #mtGeneratorRoot .mt-guide .mt-navBtn {
+        border-color: rgba(0,0,0,.12);
+        background: rgba(255,255,255,.9);
+        color: #111111;
+      }
+      #mtGeneratorRoot .mt-guide .mt-guideDot {
+        background: rgba(0,0,0,.2);
       }
   </style>
 </head>
